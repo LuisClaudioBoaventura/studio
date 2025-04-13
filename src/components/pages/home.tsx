@@ -86,7 +86,7 @@ export const Home: React.FC = () => {
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Tarefas</CardTitle>
             <CardDescription>Summary of tasks</CardDescription>
@@ -98,7 +98,7 @@ export const Home: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Projects</CardTitle>
             <CardDescription>Summary of projects</CardDescription>
@@ -110,7 +110,7 @@ export const Home: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Messages</CardTitle>
             <CardDescription>Summary of messages</CardDescription>
@@ -122,7 +122,7 @@ export const Home: React.FC = () => {
         </Card>
       </div>
 
-      <Card className="transition-transform hover:scale-105">
+      <Card className="transition-transform hover:scale-105 hover:bg-secondary">
         <CardHeader>
           <CardTitle>Performance</CardTitle>
           <CardDescription>Performance graph</CardDescription>
@@ -133,7 +133,7 @@ export const Home: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Days Left</CardTitle>
             <CardDescription>Days left until the end of...</CardDescription>
@@ -144,7 +144,7 @@ export const Home: React.FC = () => {
             <p>Year: 200 days</p>
           </CardContent>
         </Card>
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Clock</CardTitle>
             <CardDescription>Analog and Digital Clock</CardDescription>
@@ -154,7 +154,7 @@ export const Home: React.FC = () => {
             <DigitalClock />
           </CardContent>
         </Card>
-        <Card className="transition-transform hover:scale-105">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Google Calendar</CardTitle>
             <CardDescription>Month view</CardDescription>
