@@ -33,7 +33,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => window.location.href = '/tasks'}>
                   <ListChecks />
-                  <span>Tasks</span>
+                  <span>Tarefas</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => window.location.href = '/dashboard'}>
                   <BarChart />
@@ -65,5 +65,6 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
     </SidebarProvider>
   );
 };
+
 
 
