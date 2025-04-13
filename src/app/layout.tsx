@@ -7,8 +7,8 @@ import {Toaster} from '@/components/ui/toaster';
 import {ThemeProvider} from '@/components/theme/theme-provider';
 import {SidebarLayout} from '@/components/layout/sidebar-layout';
 import {useEffect, useState} from 'react';
-import {Login} from '@/components/auth/login';
 import {useRouter} from 'next/navigation';
+import {Login} from '@/components/auth/login';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
