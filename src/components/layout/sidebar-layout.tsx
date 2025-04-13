@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarProvider,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {Home, ListChecks, BarChart, FileBarChart, Power} from 'lucide-react';
 
@@ -18,6 +19,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
       <div className="flex h-screen">
         <Sidebar collapsible="icon">
           <SidebarHeader>
+            <SidebarTrigger/>
             <p className="font-bold text-lg">Nebula</p>
           </SidebarHeader>
           <SidebarContent>
@@ -60,4 +62,3 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
     </SidebarProvider>
   );
 };
-
