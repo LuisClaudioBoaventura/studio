@@ -41,6 +41,7 @@ body {
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 25%;
     --sidebar-ring: 267 67% 55%;
+	--contrast: #9D4EDD;
   }
 
   .light {
@@ -76,6 +77,7 @@ body {
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 75%;
     --sidebar-ring: 267 67% 55%;
+	--contrast: #252C10;
   }
 
   .dark {
@@ -111,6 +113,7 @@ body {
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 25%;
     --sidebar-ring: 267 67% 55%;
+	--contrast: #9D4EDD;
   }
 
   body {
