@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {ThemeContext, ThemeProvider as NextThemesProvider} from 'next-themes';
+import {useTheme, ThemeProvider as NextThemesProvider} from 'next-themes';
 import {Moon, Sun} from 'lucide-react';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {Button} from '@/components/ui/button';
@@ -15,7 +15,7 @@ export function ThemeProvider({children, ...props}: ThemeProviderProps) {
 }
 
 export function ModeToggle() {
-  const {setTheme, theme} = React.useContext(ThemeContext);
+  const {setTheme, theme} = useTheme();
 
   return (
     <DropdownMenu>
@@ -34,3 +34,4 @@ export function ModeToggle() {
     </DropdownMenu>
   );
 }
+
