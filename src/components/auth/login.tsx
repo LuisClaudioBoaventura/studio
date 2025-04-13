@@ -40,7 +40,7 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
           <div className="grid gap-2">
             <Input
               type="text"
-              placeholder="Username"
+              placeholder="Username"              
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />

@@ -1,6 +1,13 @@
 /**
  * Represents a Google Calendar event.
  */
+export interface Event {
+  start: string;
+  end: string;
+  summary: string;
+
+}
+export type CalendarEvent = Event;
 export interface GoogleCalendarEvent {
   /**
    * The title of the event.
@@ -37,3 +44,18 @@ export async function getGoogleCalendarEvents(
     },
   ];
 }
+
+/**
+ * Lists events from Google Calendar for a given month.
+ *
+ * @param month The month for which to list events (1-12).
+ * @param year The year for which to list events.
+ * @returns A promise that resolves to an array of GoogleCalendarEvent objects.
+ */
+export async function listEvents(month: number, year: number): Promise<GoogleCalendarEvent[]> {
+  // This function is currently an alias for getGoogleCalendarEvents
+  // and will be implemented later with a real Google Calendar API call.
+  return getGoogleCalendarEvents(month, year);
+}
+
+
