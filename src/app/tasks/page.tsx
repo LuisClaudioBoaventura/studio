@@ -61,7 +61,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, onAddTask}) => {
   );
 };
 
-export const Tasks: React.FC = () => {
+const Tasks: React.FC = () => {
   const [todoTasks, setTodoTasks] = useState<string[]>([]);
   const [inProgressTasks, setInProgressTasks] = useState<string[]>([]);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
@@ -86,3 +86,5 @@ export const Tasks: React.FC = () => {
     </div>
   );
 };
+
+export default Tasks;
