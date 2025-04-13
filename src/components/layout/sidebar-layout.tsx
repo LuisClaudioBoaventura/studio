@@ -10,8 +10,9 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger,
+  SidebarInput,
 } from '@/components/ui/sidebar';
-import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon} from 'lucide-react';
+import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon, Search} from 'lucide-react';
 import {ModeToggle} from '@/components/theme/theme-provider';
 import React, {useRef, useEffect, useState} from 'react';
 
@@ -50,13 +51,16 @@ export const SidebarLayout: React.FC<{
       <div className="flex h-screen">
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <SidebarTrigger />
-            <p className="font-bold text-lg transition-all duration-200 group-data-[collapsible=icon]:hidden">
-              Nebula
-            </p>
-            <p className="font-bold text-lg transition-all duration-200 hidden group-data-[collapsible=icon]:block text-center">
-              N
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-lg transition-all duration-200 group-data-[collapsible=icon]:hidden">
+                Nebula
+              </p>
+              <p className="font-bold text-lg transition-all duration-200 hidden group-data-[collapsible=icon]:block text-center">
+                N
+              </p>
+              <SidebarTrigger />
+            </div>
+            <SidebarInput placeholder="Search..." />
           </SidebarHeader>
           <SidebarContent ref={sidebarRef}>
             <SidebarGroup>
@@ -97,3 +101,4 @@ export const SidebarLayout: React.FC<{
     </SidebarProvider>
   );
 };
+
