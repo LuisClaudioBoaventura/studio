@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, Search } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -12,12 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -336,6 +331,9 @@ const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
   React.ComponentProps<typeof Input>
 >(({ className, ...props }, ref) => {
+    const { state } = useSidebar();
+  const placeholder = state === "collapsed" ? <Search className="h-4 w-4" /> : "Search...";
+
   return (
     <Input
       ref={ref}
@@ -344,10 +342,11 @@ const SidebarInput = React.forwardRef<
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         className
       )}
+            placeholder={placeholder as string}
       {...props}
     />
-  )
-})
+  );
+});
 SidebarInput.displayName = "SidebarInput"
 
 const SidebarHeader = React.forwardRef<
@@ -761,3 +760,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+

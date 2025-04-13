@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
   SidebarInput,
 } from '@/components/ui/sidebar';
-import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon, Search} from 'lucide-react';
+import {ListChecks, BarChart, FileBarGraph, Power, Home as HomeIcon} from 'lucide-react';
 import {ModeToggle} from '@/components/theme/theme-provider';
 import React, {useRef, useEffect, useState} from 'react';
 
@@ -60,7 +60,7 @@ export const SidebarLayout: React.FC<{
               </p>
               <SidebarTrigger />
             </div>
-            <SidebarInput placeholder="Search..." />
+            <SidebarInput placeholder="Search..."  />
           </SidebarHeader>
           <SidebarContent ref={sidebarRef}>
             <SidebarGroup>
@@ -78,7 +78,7 @@ export const SidebarLayout: React.FC<{
                   <span>Dashboard</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => (window.location.href = '/reports')}>
-                  <FileBarChart />
+                  <FileBarGraph />
                   <span>Reports</span>
                 </SidebarMenuButton>
               </SidebarMenu>
