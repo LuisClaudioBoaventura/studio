@@ -14,6 +14,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        spellCheck={false}
+        data-ms-editor="true"
         {...props}
       />
     )
@@ -22,3 +24,4 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 Input.displayName = "Input"
 
 export { Input }
+
