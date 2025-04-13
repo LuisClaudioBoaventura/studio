@@ -111,7 +111,7 @@ const Tasks: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="flex justify-start space-x-4 overflow-x-auto">
+      <div className="flex justify-center space-x-4 overflow-x-auto">
         <TaskColumn
           title="A fazer"
           tasks={todoTasks}
