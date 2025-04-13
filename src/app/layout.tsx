@@ -32,36 +32,31 @@ export default function RootLayout({
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-      router.push('/');
     }
   }, [router]);
 
   const onLogin = () => {
     setIsLoggedIn(true);
-    router.push('/dashboard');
+    localStorage.setItem('token', 'dummytoken');
+    router.push('/');
   };
 
-  if (!isLoggedIn) {
-    return (
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <Toaster />
-            <Login onLogin={onLogin} />
-          </ThemeProvider>
-        </body>
-      </html>
-    );
-  }
+  const onLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('token');
+    router.push('/');
+  };
 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster />
-          <SidebarLayout>{children}</SidebarLayout>
+          {isLoggedIn ? (
+            <SidebarLayout onLogout={onLogout}>{children}</SidebarLayout>
+          ) : (
+            <Login onLogin={onLogin} />
+          )}
         </ThemeProvider>
       </body>
     </html>

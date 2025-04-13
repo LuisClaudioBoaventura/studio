@@ -11,11 +11,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import {ListChecks, BarChart, FileBarChart, Power, HomeIcon} from 'lucide-react';
+import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon} from 'lucide-react';
 import {ModeToggle} from '@/components/theme/theme-provider';
 import React, {useRef, useEffect, useState} from 'react';
 
-export const SidebarLayout: React.FC<{children: React.ReactNode}> = ({children}) => {
+export const SidebarLayout: React.FC<{
+  children: React.ReactNode;
+  onLogout: () => void;
+}> = ({children, onLogout}) => {
   const sidebarRef = useRef(null);
   const [sidebarWidth, setSidebarWidth] = useState('16rem');
 
@@ -81,12 +84,7 @@ export const SidebarLayout: React.FC<{children: React.ReactNode}> = ({children})
             <SidebarGroup>
               <SidebarMenu className="group-data-[collapsible=icon]:items-center">
                 <ModeToggle />
-                <SidebarMenuButton
-                  onClick={() => {
-                    localStorage.removeItem('token');
-                    window.location.href = '/';
-                  }}
-                >
+                <SidebarMenuButton onClick={onLogout}>
                   <Power />
                   <span>Logout</span>
                 </SidebarMenuButton>
@@ -99,4 +97,3 @@ export const SidebarLayout: React.FC<{children: React.ReactNode}> = ({children})
     </SidebarProvider>
   );
 };
-
