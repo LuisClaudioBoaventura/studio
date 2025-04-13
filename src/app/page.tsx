@@ -1,3 +1,7 @@
-export default function Home() {
-  return <></>;
+'use client';
+
+import {Home} from '@/components/pages/home';
+
+export default function HomePage() {
+  return <Home />;
 }
