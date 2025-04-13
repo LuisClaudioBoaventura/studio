@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
   SidebarInput,
 } from '@/components/ui/sidebar';
-import {ListChecks, BarChart, FileBarGraph, Power, Home as HomeIcon} from 'lucide-react';
+import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon} from 'lucide-react';
 import {ModeToggle} from '@/components/theme/theme-provider';
 import React, {useRef, useEffect, useState} from 'react';
 
@@ -78,7 +78,7 @@ export const SidebarLayout: React.FC<{
                   <span>Dashboard</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => (window.location.href = '/reports')}>
-                  <FileBarGraph />
+                  <FileBarChart />
                   <span>Reports</span>
                 </SidebarMenuButton>
               </SidebarMenu>
@@ -101,4 +101,3 @@ export const SidebarLayout: React.FC<{
     </SidebarProvider>
   );
 };
-
