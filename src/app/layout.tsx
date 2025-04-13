@@ -4,10 +4,11 @@ import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
-import {Login} from '@/components/auth/login';
-import {useState, useEffect} from 'react';
-import {SidebarLayout} from '@/components/layout/sidebar-layout';
 import {ThemeProvider} from '@/components/theme/theme-provider';
+import {SidebarLayout} from '@/components/layout/sidebar-layout';
+import {useEffect, useState} from 'react';
+import {Login} from '@/components/auth/login';
+import {useRouter} from 'next/navigation';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,28 +25,43 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate authentication check (replace with actual authentication logic)
     const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true);
+      setIsLoggedIn(true);
     } else {
-      setIsAuthenticated(false);
+      setIsLoggedIn(false);
+      router.push('/');
     }
-  }, []);
+  }, [router]);
+
+  const onLogin = () => {
+    setIsLoggedIn(true);
+    router.push('/dashboard');
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Toaster />
+            <Login onLogin={onLogin} />
+          </ThemeProvider>
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster />
-          {isAuthenticated ? (
-            <SidebarLayout>{children}</SidebarLayout>
-          ) : (
-            <Login onLogin={() => setIsAuthenticated(true)} />
-          )}
+          <SidebarLayout>{children}</SidebarLayout>
         </ThemeProvider>
       </body>
     </html>
