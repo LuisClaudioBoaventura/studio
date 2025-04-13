@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {Home, ListChecks, BarChart, FileBarChart, Power} from 'lucide-react';
+import {ModeToggle} from '@/components/theme/theme-provider';
 
 export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children}) => {
   return (
@@ -21,6 +22,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
           <SidebarHeader>
             <SidebarTrigger/>
             <p className="font-bold text-lg">Nebula</p>
+            <ModeToggle />
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>

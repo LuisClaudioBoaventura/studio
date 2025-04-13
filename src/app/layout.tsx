@@ -7,6 +7,7 @@ import {Toaster} from '@/components/ui/toaster';
 import {Login} from '@/components/auth/login';
 import {useState, useEffect} from 'react';
 import {SidebarLayout} from '@/components/layout/sidebar-layout';
+import {ThemeProvider} from '@/components/theme/theme-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -44,12 +45,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Toaster />
-        {isAuthenticated ? (
-          <SidebarLayout>{children}</SidebarLayout>
-        ) : (
-          <Login onLogin={() => setIsAuthenticated(true)} />
-        )}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Toaster />
+          {isAuthenticated ? (
+            <SidebarLayout>{children}</SidebarLayout>
+          ) : (
+            <Login onLogin={() => setIsAuthenticated(true)} />
+          )}
+        </ThemeProvider>
       </body>
     </html>
   );
