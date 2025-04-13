@@ -22,7 +22,6 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
           <SidebarHeader>
             <SidebarTrigger/>
             <p className="font-bold text-lg">Nebula</p>
-            <ModeToggle />
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -53,6 +52,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
                   <Power />
                   <span>Logout</span>
                 </SidebarMenuButton>
+                <ModeToggle />
               </SidebarMenu>
             </SidebarGroup>
           </SidebarFooter>
@@ -64,3 +64,4 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
     </SidebarProvider>
   );
 };
+
