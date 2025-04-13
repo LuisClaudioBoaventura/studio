@@ -48,7 +48,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
           </SidebarContent>
           <SidebarFooter>
             <SidebarGroup>
-              <SidebarMenu>
+              <SidebarMenu className="group-data-[collapsible=icon]:items-center">
                 <SidebarMenuButton onClick={() => { localStorage.removeItem('token'); window.location.href = '/';}}>
                   <Power />
                   <span>Logout</span>
