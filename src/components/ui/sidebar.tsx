@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Search } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -331,8 +331,8 @@ const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
   React.ComponentProps<typeof Input>
 >(({ className, ...props }, ref) => {
-    const { state } = useSidebar();
-  const placeholder = state === "collapsed" ? <Search className="h-4 w-4" /> : "Search...";
+  const { state } = useSidebar();
+  const placeholder = state === "collapsed" ? "🔍" : "Search...";
 
   return (
     <Input
@@ -342,7 +342,7 @@ const SidebarInput = React.forwardRef<
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         className
       )}
-            placeholder={placeholder as string}
+      placeholder={placeholder}
       {...props}
     />
   );
@@ -760,4 +760,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
