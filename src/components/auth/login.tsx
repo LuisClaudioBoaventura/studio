@@ -20,18 +20,23 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
       onLogin();
     } else {
       setError('Invalid credentials');
+      setTimeout(() => setError(''), 3000); // Clear error after 3 seconds
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-background">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center h-screen bg-background transition-opacity duration-300 animate-fade-in">
+      <Card className="w-full max-w-md transition-all duration-300 hover:shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Login</CardTitle>
           <CardDescription className="text-center">Enter your username and password to continue</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm animate-slide-in-left">
+              {error}
+            </p>
+          )}
           <div className="grid gap-2">
             <Input
               type="text"
