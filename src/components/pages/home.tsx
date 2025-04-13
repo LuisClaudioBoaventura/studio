@@ -42,15 +42,15 @@ const AnalogClock = () => {
   return (
     <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted">
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-border w-0.5 h-24 origin-bottom"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-border w-0.5 h-20 origin-bottom"
         ref={hourHandRef}
       />
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-input w-0.5 h-32 origin-bottom"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-input w-0.5 h-28 origin-bottom"
         ref={minuteHandRef}
       />
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary w-0.5 h-40 origin-bottom"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary w-0.5 h-36 origin-bottom"
         ref={secondHandRef}
       />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full border border-background" />
@@ -82,7 +82,7 @@ export const Home: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="transition-transform hover:scale-105">
           <CardHeader>
-            <CardTitle>Tasks</CardTitle>
+            <CardTitle>Tarefas</CardTitle>
             <CardDescription>Summary of tasks</CardDescription>
           </CardHeader>
           <CardContent>
