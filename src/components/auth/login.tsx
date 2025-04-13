@@ -4,22 +4,36 @@ import {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {useRouter} from 'next/navigation';
+import {useToast} from '@/hooks/use-toast';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin?: () => void;
 }
 
 export const Login: React.FC<LoginProps> = ({onLogin}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
+  const {toast} = useToast();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username === 'user' && password === 'password') {
       localStorage.setItem('token', 'dummytoken');
-      onLogin();
+      toast({
+        title: 'Login efetuado com sucesso!',
+        description: 'Você será redirecionado para a página inicial.',
+      });
+      onLogin && onLogin();
+      router.push('/');
     } else {
-      setError('Invalid credentials');
+      setError('Credenciais inválidas');
+      toast({
+        title: 'Erro!',
+        description: 'Usuário ou senha incorretos.',
+        variant: 'destructive',
+      });
       setTimeout(() => setError(''), 3000); // Clear error after 3 seconds
     }
   };
@@ -29,7 +43,7 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
       <Card className="w-full max-w-md transition-all duration-300 hover:shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Login</CardTitle>
-          <CardDescription className="text-center">Enter your username and password to continue</CardDescription>
+          <CardDescription className="text-center">Entre com seu usuário e senha para continuar</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {error && (
@@ -40,7 +54,7 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
           <div className="grid gap-2">
             <Input
               type="text"
-              placeholder="Username"              
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -53,7 +67,7 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Button onClick={handleLogin}>Sign In</Button>
+          <Button onClick={handleLogin}>Entrar</Button>
         </CardContent>
       </Card>
     </div>
