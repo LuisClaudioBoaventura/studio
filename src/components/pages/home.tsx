@@ -30,12 +30,15 @@ const AnalogClock = () => {
 
     if (hourHandRef.current) {
       hourHandRef.current.style.transform = `rotate(${hourRotation}deg)`;
+      hourHandRef.current.style.transformOrigin = 'center bottom';
     }
     if (minuteHandRef.current) {
       minuteHandRef.current.style.transform = `rotate(${minuteRotation}deg)`;
+      minuteHandRef.current.style.transformOrigin = 'center bottom';
     }
     if (secondHandRef.current) {
       secondHandRef.current.style.transform = `rotate(${secondRotation}deg)`;
+      secondHandRef.current.style.transformOrigin = 'center bottom';
     }
   };
 
@@ -44,14 +47,17 @@ const AnalogClock = () => {
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-border w-0.5 h-20 origin-bottom"
         ref={hourHandRef}
+        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
       />
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-input w-0.5 h-28 origin-bottom"
         ref={minuteHandRef}
+        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
       />
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary w-0.5 h-36 origin-bottom"
         ref={secondHandRef}
+        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
       />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full border border-background" />
     </div>
