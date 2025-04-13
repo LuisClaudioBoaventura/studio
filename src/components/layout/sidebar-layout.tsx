@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from '@/components/ui/sidebar';
-import {Home, ListChecks, BarChart, FileBarGraph, Power} from 'lucide-react';
+import {Home, ListChecks, BarChart, FileBarChart, Power} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 
 export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children}) => {
@@ -44,7 +44,7 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
                   <span>Dashboard</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => router.push('/reports')}>
-                  <FileBarGraph />
+                  <FileBarChart />
                   <span>Reports</span>
                 </SidebarMenuButton>
               </SidebarMenu>
