@@ -24,20 +24,20 @@ const TaskCard: React.FC<TaskCardProps> = ({text, priority}) => {
 interface TaskColumnProps {
   title: string;
   tasks: {text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]
-  onAddTask: (task: string, priority: 'Baixa' | 'Média' | 'Alta') => void;
+  // onAddTask: (task: string, priority: 'Baixa' | 'Média' | 'Alta') => void;
   taskCount: number;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, onAddTask, taskCount}) => {
-  const [newTask, setNewTask] = useState('');
-  const [newPriority, setNewPriority] = useState<'Baixa' | 'Média' | 'Alta'>('Média');
+const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, /*onAddTask,*/ taskCount}) => {
+  // const [newTask, setNewTask] = useState('');
+  // const [newPriority, setNewPriority] = useState<'Baixa' | 'Média' | 'Alta'>('Média');
 
-  const handleAddTask = () => {
-    if (newTask.trim() !== '') {
-      onAddTask(newTask, newPriority);
-      setNewTask('');
-    }
-  };
+  // const handleAddTask = () => {
+  //   if (newTask.trim() !== '') {
+  //     onAddTask(newTask, newPriority);
+  //     setNewTask('');
+  //   }
+  // };
 
   return (
     <div className="flex flex-col items-center w-full min-w-[300px]">
@@ -52,7 +52,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, onAddTask, taskCou
       {tasks.map((task, index) => (
         <TaskCard key={index} text={task.text} priority={task.priority} />
       ))}
-      <div className="w-full mt-2">
+      {/* <div className="w-full mt-2">
         <Input
           type="text"
           placeholder="New task"
@@ -72,7 +72,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, onAddTask, taskCou
         <Button onClick={handleAddTask} className="w-full">
           Add Task
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
@@ -82,17 +82,17 @@ const Tasks: React.FC = () => {
   const [inProgressTasks, setInProgressTasks] = useState<{text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]>([]);
   const [completedTasks, setCompletedTasks] = useState<{text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]>([]);
 
-  const handleAddTodoTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
-    setTodoTasks([...todoTasks, {text: task, priority}]);
-  };
+  // const handleAddTodoTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
+  //   setTodoTasks([...todoTasks, {text: task, priority}]);
+  // };
 
-  const handleAddInProgressTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
-    setInProgressTasks([...inProgressTasks, {text: task, priority}]);
-  };
+  // const handleAddInProgressTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
+  //   setInProgressTasks([...inProgressTasks, {text: task, priority}]);
+  // };
 
-  const handleAddCompletedTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
-    setCompletedTasks([...completedTasks, {text: task, priority}]);
-  };
+  // const handleAddCompletedTask = (task: string, priority: 'Baixa' | 'Média' | 'Alta') => {
+  //   setCompletedTasks([...completedTasks, {text: task, priority}]);
+  // };
 
   return (
     <div className="p-4">
@@ -107,19 +107,19 @@ const Tasks: React.FC = () => {
         <TaskColumn
           title="A fazer"
           tasks={todoTasks}
-          onAddTask={handleAddTodoTask}
+          // onAddTask={handleAddTodoTask}
           taskCount={todoTasks.length}
         />
         <TaskColumn
           title="Em progresso"
           tasks={inProgressTasks}
-          onAddTask={handleAddInProgressTask}
+          // onAddTask={handleAddInProgressTask}
           taskCount={inProgressTasks.length}
         />
         <TaskColumn
           title="Concluído"
           tasks={completedTasks}
-          onAddTask={handleAddCompletedTask}
+          // onAddTask={handleAddCompletedTask}
           taskCount={completedTasks.length}
         />
       </div>
