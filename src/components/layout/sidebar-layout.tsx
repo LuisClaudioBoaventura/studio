@@ -99,3 +99,4 @@ export const SidebarLayout: React.FC<{children: React.ReactNode}> = ({children})
     </SidebarProvider>
   );
 };
+
