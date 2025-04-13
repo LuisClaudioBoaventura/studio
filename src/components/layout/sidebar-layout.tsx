@@ -21,7 +21,8 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <SidebarTrigger/>
-            <p className="font-bold text-lg">Nebula</p>
+            <p className="font-bold text-lg transition-all duration-200 group-data-[collapsible=icon]:hidden">Nebula</p>
+            <p className="font-bold text-lg transition-all duration-200 hidden group-data-[collapsible=icon]:block text-center">N</p>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -64,4 +65,5 @@ export const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({children
     </SidebarProvider>
   );
 };
+
 
