@@ -40,7 +40,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, onAddTask, taskCou
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-sm">
+    <div className="flex flex-col items-center w-full min-w-[300px]">
       <Card className="w-full mb-4 shadow-md">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-center">{title}</CardTitle>
@@ -103,7 +103,7 @@ const Tasks: React.FC = () => {
           Criar Tarefa
         </Button>
       </div>
-      <div className="flex justify-center space-x-4">
+      <div className="flex justify-start space-x-4 overflow-x-auto">
         <TaskColumn
           title="A fazer"
           tasks={todoTasks}
@@ -128,3 +128,5 @@ const Tasks: React.FC = () => {
 };
 
 export default Tasks;
+
+    
