@@ -1,10 +1,11 @@
+
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {PlusIcon, EditIcon} from 'lucide-react'; // Added EditIcon if needed, or handle click differently
+import {PlusIcon, EditIcon, ClockIcon, PlayIcon, PauseIcon, RotateCcwIcon} from 'lucide-react'; // Added Pomodoro icons
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,13 @@ interface Task {
   };
 }
 
+interface PomodoroState {
+  taskId: string | null;
+  remainingTime: number; // in seconds
+  isRunning: boolean;
+  intervalId: NodeJS.Timeout | null;
+}
+
 interface TaskCardProps {
   task: Task;
   onDragStart: (
@@ -48,49 +56,118 @@ interface TaskCardProps {
     sourceColumn: string
   ) => void;
   sourceColumn: string;
-  onEditClick: (task: Task) => void; // Add prop for edit click
+  onEditClick: (task: Task) => void;
+  onPomodoroToggle: (taskId: string) => void; // Function to toggle pomodoro
+  onPomodoroReset: (taskId: string) => void; // Function to reset pomodoro
+  activePomodoro: PomodoroState | null; // Current pomodoro state
 }
+
+// Helper function to format time
+const formatTime = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
 
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onDragStart,
   sourceColumn,
   onEditClick,
+  onPomodoroToggle,
+  onPomodoroReset,
+  activePomodoro,
 }) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, task, sourceColumn);
   };
 
-  const handleEditClick = () => {
+  const handleEditClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      // Prevent triggering pomodoro when clicking the main card area for edit
+      if ((e.target as HTMLElement).closest('.pomodoro-controls')) {
+          return;
+      }
     onEditClick(task);
   };
+
+  const handlePomodoroClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // Prevent triggering edit click
+    onPomodoroToggle(task.id);
+  };
+
+  const handlePomodoroResetClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // Prevent triggering edit click
+    onPomodoroReset(task.id);
+  }
+
+  const isPomodoroActive = activePomodoro?.taskId === task.id;
+  const pomodoroRunning = isPomodoroActive && activePomodoro?.isRunning;
+  const pomodoroTime = isPomodoroActive ? activePomodoro?.remainingTime ?? 0 : 0;
 
   return (
     <Card
       draggable="true"
       onDragStart={handleDragStart}
       onClick={handleEditClick} // Add onClick handler
-      className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-pointer active:cursor-grabbing" // Added cursor-pointer
+      className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-pointer active:cursor-grabbing relative" // Added cursor-pointer and relative
     >
       <CardContent className="p-3">
-        <p className="font-semibold">{task.title}</p>
-        <p className="text-sm text-muted-foreground">{task.text}</p>
-        <span
-          className={cn(
-            'text-xs px-2 py-0.5 rounded-full mt-1 inline-block',
-            task.priority === 'Alta' && 'bg-red-500 text-white',
-            task.priority === 'Média' && 'bg-yellow-500 text-black',
-            task.priority === 'Baixa' && 'bg-green-500 text-white'
-          )}
-        >
-          {task.priority}
-        </span>
-        {task.recurrence && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Repete {task.recurrence.frequency.toLowerCase()} a cada {task.recurrence.interval}{' '}
-            {task.recurrence.frequency === 'Semanal' && task.recurrence.days && `(${task.recurrence.days.join(', ')})`}
-          </p>
-        )}
+        <div className="flex justify-between items-start">
+            <div>
+                <p className="font-semibold">{task.title}</p>
+                <p className="text-sm text-muted-foreground">{task.text}</p>
+                <span
+                  className={cn(
+                    'text-xs px-2 py-0.5 rounded-full mt-1 inline-block',
+                    task.priority === 'Alta' && 'bg-red-500 text-white',
+                    task.priority === 'Média' && 'bg-yellow-500 text-black',
+                    task.priority === 'Baixa' && 'bg-green-500 text-white'
+                  )}
+                >
+                  {task.priority}
+                </span>
+                {task.recurrence && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Repete {task.recurrence.frequency.toLowerCase()} a cada {task.recurrence.interval}{' '}
+                    {task.recurrence.frequency === 'Semanal' && task.recurrence.days && `(${task.recurrence.days.join(', ')})`}
+                  </p>
+                )}
+            </div>
+             {/* Pomodoro Controls */}
+             <div className="pomodoro-controls flex items-center space-x-1 ml-2">
+                 {isPomodoroActive && (
+                     <span className="text-xs font-mono text-primary mr-1">
+                        {formatTime(pomodoroTime)}
+                     </span>
+                 )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-primary"
+                    onClick={handlePomodoroClick}
+                    aria-label={pomodoroRunning ? "Pause Pomodoro" : "Start/Resume Pomodoro"}
+                >
+                    {isPomodoroActive ? (
+                        pomodoroRunning ? <PauseIcon size={14} /> : <PlayIcon size={14} />
+                    ) : (
+                        <ClockIcon size={14} />
+                    )}
+                </Button>
+                {isPomodoroActive && (
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={handlePomodoroResetClick}
+                        aria-label="Reset Pomodoro"
+                    >
+                         <RotateCcwIcon size={14} />
+                     </Button>
+                )}
+            </div>
+        </div>
+
+
       </CardContent>
     </Card>
   );
@@ -108,6 +185,9 @@ interface TaskColumnProps {
   onDrop: (e: React.DragEvent<HTMLDivElement>, targetColumn: string) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onEditClick: (task: Task) => void; // Pass edit handler down
+  onPomodoroToggle: (taskId: string) => void;
+  onPomodoroReset: (taskId: string) => void;
+  activePomodoro: PomodoroState | null;
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({
@@ -118,6 +198,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
   onDrop,
   onDragOver,
   onEditClick,
+  onPomodoroToggle,
+  onPomodoroReset,
+  activePomodoro,
 }) => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     onDrop(e, title);
@@ -145,6 +228,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
             onDragStart={onDragStart}
             sourceColumn={title}
             onEditClick={onEditClick} // Pass handler to TaskCard
+            onPomodoroToggle={onPomodoroToggle}
+            onPomodoroReset={onPomodoroReset}
+            activePomodoro={activePomodoro}
           />
         ))}
       </div>
@@ -164,6 +250,8 @@ const weekDays = [
   { id: 'sab', label: 'sá' },
 ];
 
+const POMODORO_DURATION = 25 * 60; // 25 minutes in seconds
+
 const Tasks: React.FC = () => {
   const [todoTasks, setTodoTasks] = useState<Task[]>([]);
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([]);
@@ -177,7 +265,76 @@ const Tasks: React.FC = () => {
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceDays, setRecurrenceDays] = useState<string[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null); // State for the task being edited
+  const [activePomodoro, setActivePomodoro] = useState<PomodoroState | null>(null);
   const {toast} = useToast();
+
+  // Pomodoro Timer Effect
+  useEffect(() => {
+    if (activePomodoro?.isRunning && activePomodoro.remainingTime > 0) {
+      const intervalId = setInterval(() => {
+        setActivePomodoro(prev => {
+          if (prev && prev.isRunning && prev.remainingTime > 0) {
+            return {...prev, remainingTime: prev.remainingTime - 1};
+          }
+          // If time reaches 0 or state changes unexpectedly, clear interval
+          clearInterval(intervalId);
+          return prev ? {...prev, isRunning: false} : null;
+        });
+      }, 1000);
+
+      // Store intervalId to clear it later
+      setActivePomodoro(prev => prev ? { ...prev, intervalId: intervalId } : null);
+
+      return () => {
+        clearInterval(intervalId);
+        setActivePomodoro(prev => prev ? { ...prev, intervalId: null } : null); // Clear intervalId on cleanup
+      }
+    } else if (activePomodoro?.remainingTime === 0 && activePomodoro.isRunning) {
+      // Timer finished
+      toast({
+        title: 'Pomodoro Concluído!',
+        description: `Tempo para a tarefa #${activePomodoro.taskId} finalizado.`,
+      });
+      setActivePomodoro(prev => prev ? { ...prev, isRunning: false } : null);
+      // Optionally reset or move the task
+    }
+  }, [activePomodoro?.isRunning, activePomodoro?.remainingTime, toast]); // Rerun effect when isRunning or remainingTime changes
+
+  const handlePomodoroToggle = (taskId: string) => {
+      setActivePomodoro(prev => {
+          // Clear existing interval if any
+          if (prev?.intervalId) {
+            clearInterval(prev.intervalId);
+          }
+
+          // If clicking the currently active task
+          if (prev?.taskId === taskId) {
+            // If it's running, pause it. If paused, resume it.
+             if (prev.remainingTime > 0) {
+                return { ...prev, isRunning: !prev.isRunning, intervalId: null };
+            } else {
+                // If time is 0, reset and start
+                 return { taskId, remainingTime: POMODORO_DURATION, isRunning: true, intervalId: null };
+            }
+          }
+          // If clicking a new task or no active task
+          else {
+              return { taskId, remainingTime: POMODORO_DURATION, isRunning: true, intervalId: null };
+          }
+      });
+  };
+
+  const handlePomodoroReset = (taskId: string) => {
+      setActivePomodoro(prev => {
+           if (prev?.intervalId) {
+               clearInterval(prev.intervalId);
+           }
+           if (prev?.taskId === taskId) {
+                return { ...prev, remainingTime: POMODORO_DURATION, isRunning: false, intervalId: null };
+           }
+           return prev; // Don't change if it's not the active one
+      });
+  };
 
   const getFrequencyUnit = (freq: RecurrenceFrequency): string => {
     switch (freq) {
@@ -349,6 +506,11 @@ const Tasks: React.FC = () => {
 
     try {
       const task: Task = JSON.parse(taskData);
+
+        // Reset pomodoro if task is moved and it's the active one
+       if (activePomodoro?.taskId === task.id) {
+         handlePomodoroReset(task.id);
+       }
 
       // Remove from source column
       const sourceSetter = getTasksSetter(sourceColumn);
@@ -523,6 +685,9 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onPomodoroToggle={handlePomodoroToggle}
+          onPomodoroReset={handlePomodoroReset}
+          activePomodoro={activePomodoro}
         />
         <TaskColumn
           title="Em progresso"
@@ -532,6 +697,9 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onPomodoroToggle={handlePomodoroToggle}
+          onPomodoroReset={handlePomodoroReset}
+          activePomodoro={activePomodoro}
         />
         <TaskColumn
           title="Concluído"
@@ -541,6 +709,9 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onPomodoroToggle={handlePomodoroToggle}
+          onPomodoroReset={handlePomodoroReset}
+          activePomodoro={activePomodoro}
         />
       </div>
     </div>
@@ -548,3 +719,6 @@ const Tasks: React.FC = () => {
 };
 
 export default Tasks;
+
+
+    
