@@ -3,6 +3,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Calendar} from '@/components/ui/calendar';
 import {useEffect, useRef, useState} from 'react';
+import {loadTasksFromLocalStorage, Task} from '@/app/tasks/page'; // Import Task and loader
 
 const AnalogClock = () => {
   const [time, setTime] = useState(new Date());
@@ -16,8 +17,15 @@ const AnalogClock = () => {
       updateHands();
     }, 1000);
 
+    // Initial update
+    updateHands();
+
     return () => clearInterval(intervalId);
-  }, []);
+  }, []); // Run only once on mount
+
+  useEffect(() => {
+    updateHands();
+  }, [time]); // Update hands whenever time changes
 
   const updateHands = () => {
     const hours = time.getHours();
@@ -25,41 +33,40 @@ const AnalogClock = () => {
     const seconds = time.getSeconds();
 
     const hourRotation = (hours % 12 + minutes / 60) * 30;
-    const minuteRotation = minutes * 6;
+    const minuteRotation = (minutes + seconds / 60) * 6; // Add seconds fraction for smoother movement
     const secondRotation = seconds * 6;
 
     if (hourHandRef.current) {
-      hourHandRef.current.style.transform = `rotate(${hourRotation}deg)`;
-      hourHandRef.current.style.transformOrigin = 'center bottom';
+      hourHandRef.current.style.transform = `translate(-50%, -100%) rotate(${hourRotation}deg)`;
     }
     if (minuteHandRef.current) {
-      minuteHandRef.current.style.transform = `rotate(${minuteRotation}deg)`;
-      minuteHandRef.current.style.transformOrigin = 'center bottom';
+      minuteHandRef.current.style.transform = `translate(-50%, -100%) rotate(${minuteRotation}deg)`;
     }
     if (secondHandRef.current) {
-      secondHandRef.current.style.transform = `rotate(${secondRotation}deg)`;
-      secondHandRef.current.style.transformOrigin = 'center bottom';
+      secondHandRef.current.style.transform = `translate(-50%, -100%) rotate(${secondRotation}deg)`;
     }
   };
 
   return (
-    <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted">
+    <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted flex items-center justify-center">
+      {/* Center Dot */}
+      <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
+      {/* Hands */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-border w-0.5 h-20 origin-bottom"
+        className="absolute bottom-1/2 left-1/2 w-1 h-[25%] bg-border origin-bottom rounded-t-full"
         ref={hourHandRef}
-        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
+        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
       />
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-input w-0.5 h-28 origin-bottom"
+        className="absolute bottom-1/2 left-1/2 w-0.5 h-[35%] bg-input origin-bottom rounded-t-full"
         ref={minuteHandRef}
-        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
+        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
       />
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary w-0.5 h-36 origin-bottom"
+        className="absolute bottom-1/2 left-1/2 w-[1px] h-[40%] bg-primary origin-bottom rounded-t-full"
         ref={secondHandRef}
-        style={{transformOrigin: 'center bottom', transform: 'rotate(0deg)'}}
+        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
       />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full border border-background" />
     </div>
   );
 };
@@ -82,51 +89,69 @@ const DigitalClock = () => {
   return <div className="text-2xl font-bold">{`${hours}:${minutes}:${seconds}`}</div>;
 };
 
+interface TaskCounts {
+  todo: number;
+  inProgress: number;
+  completed: number;
+}
+
 export const Home: React.FC = () => {
+  const [taskCounts, setTaskCounts] = useState<TaskCounts>({ todo: 0, inProgress: 0, completed: 0 });
+
+  useEffect(() => {
+    const loadedTasks = loadTasksFromLocalStorage();
+    setTaskCounts({
+      todo: loadedTasks.todo.length,
+      inProgress: loadedTasks.inProgress.length,
+      completed: loadedTasks.completed.length,
+    });
+  }, []);
+
+
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Tarefas</CardTitle>
-            <CardDescription>Summary of tasks</CardDescription>
+            <CardDescription>Resumo das tarefas</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Total Tasks: 10</p>
-            <p>Completed: 7</p>
-            <p>Pending: 3</p>
+            <p>A fazer: {taskCounts.todo}</p>
+            <p>Concluído: {taskCounts.completed}</p>
+            <p>Em progresso: {taskCounts.inProgress}</p>
           </CardContent>
         </Card>
 
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Projects</CardTitle>
-            <CardDescription>Summary of projects</CardDescription>
+            <CardTitle>Projetos</CardTitle>
+            <CardDescription>Resumo dos projetos</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Total Projects: 5</p>
-            <p>Active: 3</p>
-            <p>Completed: 2</p>
+            <p>Total de Projetos: 5</p>
+            <p>Ativo: 3</p>
+            <p>Concluído: 2</p>
           </CardContent>
         </Card>
 
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Messages</CardTitle>
-            <CardDescription>Summary of messages</CardDescription>
+            <CardTitle>Mensagens</CardTitle>
+            <CardDescription>Resumo das mensagens</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Unread: 2</p>
+            <p>Não lidas: 2</p>
             <p>Total: 20</p>
           </CardContent>
         </Card>
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>Summary of your notifications</CardDescription>
+            <CardTitle>Notificações</CardTitle>
+            <CardDescription>Resumo das suas notificações</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>New: 3</p>
+            <p>Novas: 3</p>
             <p>Total: 15</p>
           </CardContent>
         </Card>
@@ -134,60 +159,60 @@ export const Home: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Settings</CardTitle>
-            <CardDescription>Quick settings</CardDescription>
+            <CardTitle>Configurações</CardTitle>
+            <CardDescription>Configurações rápidas</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Change your theme</p>
-            <p>Change your preferences</p>
+            <p>Mude seu tema</p>
+            <p>Mude suas preferências</p>
           </CardContent>
         </Card>
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Tips and Tricks</CardTitle>
-            <CardDescription>Learn new ways to improve productivity.</CardDescription>
+            <CardTitle>Dicas e Truques</CardTitle>
+            <CardDescription>Aprenda novas formas de melhorar a produtividade.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Explore shortcuts and commands.</p>
+            <p>Explore atalhos e comandos.</p>
           </CardContent>
         </Card>
           <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-          <CardDescription>Performance graph</CardDescription>
+          <CardDescription>Gráfico de performance</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Placeholder for performance graph</p>
+          <p>Placeholder para gráfico de performance</p>
         </CardContent>
       </Card>
 
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Stay Updated</CardTitle>
-            <CardDescription>Information about news.</CardDescription>
+            <CardTitle>Mantenha-se Atualizado</CardTitle>
+            <CardDescription>Informações sobre novidades.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Latest version information.</p>
+            <p>Informações da última versão.</p>
           </CardContent>
         </Card>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Days Left</CardTitle>
-            <CardDescription>Days left until the end of...</CardDescription>
+            <CardTitle>Dias Restantes</CardTitle>
+            <CardDescription>Dias restantes até o fim de...</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Week: 3 days</p>
-            <p>Month: 10 days</p>
-            <p>Year: 200 days</p>
+            <p>Semana: 3 dias</p>
+            <p>Mês: 10 dias</p>
+            <p>Ano: 200 dias</p>
           </CardContent>
         </Card>
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
-            <CardTitle>Clock</CardTitle>
-            <CardDescription>Analog and Digital Clock</CardDescription>
+            <CardTitle>Relógio</CardTitle>
+            <CardDescription>Relógio Analógico e Digital</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center">
+          <CardContent className="flex flex-col items-center gap-4">
             <AnalogClock />
             <DigitalClock />
           </CardContent>
@@ -195,7 +220,7 @@ export const Home: React.FC = () => {
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Google Calendar</CardTitle>
-            <CardDescription>Month view</CardDescription>
+            <CardDescription>Visão mensal</CardDescription>
           </CardHeader>
           <CardContent>
             <Calendar />

@@ -29,7 +29,7 @@ import {
 import {ToggleGroup, ToggleGroupItem} from '@/components/ui/toggle-group';
 
 
-interface Task {
+export interface Task { // Export interface
   id: string;
   title: string;
   text: string;
@@ -275,7 +275,7 @@ const POMODORO_DURATION = 25 * 60; // 25 minutes in seconds
 const LOCAL_STORAGE_KEY = 'nebulaTasks';
 
 // Function to load tasks from localStorage
-const loadTasksFromLocalStorage = (): { todo: Task[]; inProgress: Task[]; completed: Task[] } => {
+export const loadTasksFromLocalStorage = (): { todo: Task[]; inProgress: Task[]; completed: Task[] } => { // Export function
   if (typeof window === 'undefined') {
     return { todo: [], inProgress: [], completed: [] };
   }
@@ -306,9 +306,9 @@ const saveTasksToLocalStorage = (tasks: { todo: Task[]; inProgress: Task[]; comp
 
 const Tasks: React.FC = () => {
    // Initialize state from localStorage or default to empty arrays
-   const [todoTasks, setTodoTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().todo);
-   const [inProgressTasks, setInProgressTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().inProgress);
-   const [completedTasks, setCompletedTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().completed);
+   const [todoTasks, setTodoTasks] = useState<Task[]>([]);
+   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([]);
+   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [open, setOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskText, setNewTaskText] = useState('');
