@@ -272,11 +272,43 @@ const weekDays = [
 ];
 
 const POMODORO_DURATION = 25 * 60; // 25 minutes in seconds
+const LOCAL_STORAGE_KEY = 'nebulaTasks';
+
+// Function to load tasks from localStorage
+const loadTasksFromLocalStorage = (): { todo: Task[]; inProgress: Task[]; completed: Task[] } => {
+  if (typeof window === 'undefined') {
+    return { todo: [], inProgress: [], completed: [] };
+  }
+  try {
+    const savedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedTasks) {
+      const parsedTasks = JSON.parse(savedTasks);
+      // Basic validation to ensure the structure is correct
+      if (parsedTasks && Array.isArray(parsedTasks.todo) && Array.isArray(parsedTasks.inProgress) && Array.isArray(parsedTasks.completed)) {
+        return parsedTasks;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load tasks from localStorage:", error);
+  }
+  return { todo: [], inProgress: [], completed: [] };
+};
+
+// Function to save tasks to localStorage
+const saveTasksToLocalStorage = (tasks: { todo: Task[]; inProgress: Task[]; completed: Task[] }) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
+  } catch (error) {
+    console.error("Failed to save tasks to localStorage:", error);
+  }
+};
 
 const Tasks: React.FC = () => {
-  const [todoTasks, setTodoTasks] = useState<Task[]>([]);
-  const [inProgressTasks, setInProgressTasks] = useState<Task[]>([]);
-  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+   // Initialize state from localStorage or default to empty arrays
+   const [todoTasks, setTodoTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().todo);
+   const [inProgressTasks, setInProgressTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().inProgress);
+   const [completedTasks, setCompletedTasks] = useState<Task[]>(() => loadTasksFromLocalStorage().completed);
   const [open, setOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskText, setNewTaskText] = useState('');
@@ -289,6 +321,24 @@ const Tasks: React.FC = () => {
   const [activePomodoro, setActivePomodoro] = useState<PomodoroState | null>(null);
   const {toast} = useToast();
 
+  // Load tasks from localStorage on initial mount (client-side only)
+  useEffect(() => {
+      const loadedTasks = loadTasksFromLocalStorage();
+      setTodoTasks(loadedTasks.todo);
+      setInProgressTasks(loadedTasks.inProgress);
+      setCompletedTasks(loadedTasks.completed);
+  }, []);
+
+
+  // Save tasks to localStorage whenever any task list changes
+  useEffect(() => {
+      saveTasksToLocalStorage({
+          todo: todoTasks,
+          inProgress: inProgressTasks,
+          completed: completedTasks
+      });
+  }, [todoTasks, inProgressTasks, completedTasks]);
+
   // Pomodoro Timer Effect
   useEffect(() => {
     if (activePomodoro?.isRunning && activePomodoro.remainingTime > 0) {
@@ -298,17 +348,26 @@ const Tasks: React.FC = () => {
             return {...prev, remainingTime: prev.remainingTime - 1};
           }
           // If time reaches 0 or state changes unexpectedly, clear interval
-          clearInterval(intervalId);
-          return prev ? {...prev, isRunning: false} : null;
+          if (intervalId) clearInterval(intervalId); // Clear interval if it exists
+          return prev ? {...prev, isRunning: false, intervalId: null } : null; // Ensure intervalId is cleared
         });
       }, 1000);
 
       // Store intervalId to clear it later
       setActivePomodoro(prev => prev ? { ...prev, intervalId: intervalId } : null);
 
+      // Cleanup function
       return () => {
-        clearInterval(intervalId);
-        setActivePomodoro(prev => prev ? { ...prev, intervalId: null } : null); // Clear intervalId on cleanup
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+        // Important: Also clear intervalId from state on cleanup to avoid dangling references
+        setActivePomodoro(prev => {
+            if (prev?.intervalId === intervalId) {
+                return { ...prev, intervalId: null };
+            }
+            return prev;
+        });
       }
     } else if (activePomodoro?.remainingTime === 0 && activePomodoro.isRunning) {
       // Timer finished
@@ -319,7 +378,8 @@ const Tasks: React.FC = () => {
       setActivePomodoro(prev => prev ? { ...prev, isRunning: false } : null);
       // Optionally reset or move the task
     }
-  }, [activePomodoro?.isRunning, activePomodoro?.remainingTime, toast]); // Rerun effect when isRunning or remainingTime changes
+  }, [activePomodoro?.isRunning, activePomodoro?.remainingTime, toast, activePomodoro?.taskId]); // Rerun effect when isRunning or remainingTime changes
+
 
   const handlePomodoroToggle = (taskId: string) => {
       setActivePomodoro(prev => {
