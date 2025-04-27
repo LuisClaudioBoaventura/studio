@@ -5,7 +5,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {PlusIcon, EditIcon, ClockIcon, PlayIcon, PauseIcon, RotateCcwIcon} from 'lucide-react'; // Added Pomodoro icons
+import {PlusIcon, EditIcon, ClockIcon, PlayIcon, PauseIcon, RotateCcwIcon, TrashIcon} from 'lucide-react'; // Added Pomodoro and Trash icons
 import {
   Dialog,
   DialogContent,
@@ -57,6 +57,7 @@ interface TaskCardProps {
   ) => void;
   sourceColumn: string;
   onEditClick: (task: Task) => void;
+  onDeleteClick: (taskId: string) => void; // Added delete handler prop
   onPomodoroToggle: (taskId: string) => void; // Function to toggle pomodoro
   onPomodoroReset: (taskId: string) => void; // Function to reset pomodoro
   activePomodoro: PomodoroState | null; // Current pomodoro state
@@ -74,6 +75,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onDragStart,
   sourceColumn,
   onEditClick,
+  onDeleteClick, // Destructure delete handler
   onPomodoroToggle,
   onPomodoroReset,
   activePomodoro,
@@ -83,8 +85,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const handleEditClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      // Prevent triggering pomodoro when clicking the main card area for edit
-      if ((e.target as HTMLElement).closest('.pomodoro-controls')) {
+      // Prevent triggering other handlers when clicking the main card area for edit
+      if ((e.target as HTMLElement).closest('.pomodoro-controls, .delete-button')) {
           return;
       }
     onEditClick(task);
@@ -98,6 +100,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const handlePomodoroResetClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); // Prevent triggering edit click
     onPomodoroReset(task.id);
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // Prevent triggering edit click
+    onDeleteClick(task.id);
   }
 
   const isPomodoroActive = activePomodoro?.taskId === task.id;
@@ -133,41 +140,52 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   </p>
                 )}
             </div>
-             {/* Pomodoro Controls */}
-             <div className="pomodoro-controls flex items-center space-x-1 ml-2">
-                 {isPomodoroActive && (
-                     <span className="text-xs font-mono text-primary mr-1">
-                        {formatTime(pomodoroTime)}
-                     </span>
-                 )}
+             {/* Controls */}
+             <div className="flex items-center space-x-1 ml-2">
+                 {/* Pomodoro Controls */}
+                 <div className="pomodoro-controls flex items-center space-x-1">
+                     {isPomodoroActive && (
+                         <span className="text-xs font-mono text-primary mr-1">
+                            {formatTime(pomodoroTime)}
+                         </span>
+                     )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary"
+                        onClick={handlePomodoroClick}
+                        aria-label={pomodoroRunning ? "Pause Pomodoro" : "Start/Resume Pomodoro"}
+                    >
+                        {isPomodoroActive ? (
+                            pomodoroRunning ? <PauseIcon size={14} /> : <PlayIcon size={14} />
+                        ) : (
+                            <ClockIcon size={14} />
+                        )}
+                    </Button>
+                    {isPomodoroActive && (
+                         <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            onClick={handlePomodoroResetClick}
+                            aria-label="Reset Pomodoro"
+                        >
+                             <RotateCcwIcon size={14} />
+                         </Button>
+                    )}
+                </div>
+                {/* Delete Button */}
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-primary"
-                    onClick={handlePomodoroClick}
-                    aria-label={pomodoroRunning ? "Pause Pomodoro" : "Start/Resume Pomodoro"}
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive delete-button"
+                    onClick={handleDeleteClick}
+                    aria-label="Delete Task"
                 >
-                    {isPomodoroActive ? (
-                        pomodoroRunning ? <PauseIcon size={14} /> : <PlayIcon size={14} />
-                    ) : (
-                        <ClockIcon size={14} />
-                    )}
+                    <TrashIcon size={14} />
                 </Button>
-                {isPomodoroActive && (
-                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={handlePomodoroResetClick}
-                        aria-label="Reset Pomodoro"
-                    >
-                         <RotateCcwIcon size={14} />
-                     </Button>
-                )}
             </div>
         </div>
-
-
       </CardContent>
     </Card>
   );
@@ -185,6 +203,7 @@ interface TaskColumnProps {
   onDrop: (e: React.DragEvent<HTMLDivElement>, targetColumn: string) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onEditClick: (task: Task) => void; // Pass edit handler down
+  onDeleteClick: (taskId: string) => void; // Pass delete handler down
   onPomodoroToggle: (taskId: string) => void;
   onPomodoroReset: (taskId: string) => void;
   activePomodoro: PomodoroState | null;
@@ -198,6 +217,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
   onDrop,
   onDragOver,
   onEditClick,
+  onDeleteClick, // Destructure delete handler
   onPomodoroToggle,
   onPomodoroReset,
   activePomodoro,
@@ -228,6 +248,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
             onDragStart={onDragStart}
             sourceColumn={title}
             onEditClick={onEditClick} // Pass handler to TaskCard
+            onDeleteClick={onDeleteClick} // Pass delete handler
             onPomodoroToggle={onPomodoroToggle}
             onPomodoroReset={onPomodoroReset}
             activePomodoro={activePomodoro}
@@ -534,6 +555,28 @@ const Tasks: React.FC = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const handleDeleteTask = (taskId: string) => {
+      const deleteTaskFromColumn = (setter: React.Dispatch<React.SetStateAction<Task[]>>) => {
+          setter(prevTasks => prevTasks.filter(t => t.id !== taskId));
+      };
+
+      deleteTaskFromColumn(setTodoTasks);
+      deleteTaskFromColumn(setInProgressTasks);
+      deleteTaskFromColumn(setCompletedTasks);
+
+      // Stop pomodoro if the deleted task was the active one
+       if (activePomodoro?.taskId === taskId) {
+           if (activePomodoro.intervalId) clearInterval(activePomodoro.intervalId);
+           setActivePomodoro(null);
+       }
+
+      toast({
+        title: 'Tarefa excluída!',
+        description: 'A tarefa foi removida com sucesso.',
+      });
+  };
+
+
   return (
     <div className="p-4 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
@@ -685,6 +728,7 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onDeleteClick={handleDeleteTask} // Pass delete handler
           onPomodoroToggle={handlePomodoroToggle}
           onPomodoroReset={handlePomodoroReset}
           activePomodoro={activePomodoro}
@@ -697,6 +741,7 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onDeleteClick={handleDeleteTask} // Pass delete handler
           onPomodoroToggle={handlePomodoroToggle}
           onPomodoroReset={handlePomodoroReset}
           activePomodoro={activePomodoro}
@@ -709,6 +754,7 @@ const Tasks: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onEditClick={openEditModal} // Pass edit handler
+          onDeleteClick={handleDeleteTask} // Pass delete handler
           onPomodoroToggle={handlePomodoroToggle}
           onPomodoroReset={handlePomodoroReset}
           activePomodoro={activePomodoro}
@@ -719,6 +765,3 @@ const Tasks: React.FC = () => {
 };
 
 export default Tasks;
-
-
-    
