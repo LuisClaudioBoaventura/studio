@@ -1,13 +1,18 @@
 'use client';
 
-import { DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
-export const Tasks: React.FC = () => {
+export default function Tasks() {
   return (
-    <div>
-      <h1>Tasks</h1>
+    <Dialog>
       <DialogTrigger>Open</DialogTrigger>
-    </div>
+    </Dialog>
   );
 };
-

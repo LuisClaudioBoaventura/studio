@@ -85,7 +85,7 @@ const DigitalClock = () => {
 export const Home: React.FC = () => {
   return (
     <div className="grid gap-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Tarefas</CardTitle>
@@ -120,11 +120,39 @@ export const Home: React.FC = () => {
             <p>Total: 20</p>
           </CardContent>
         </Card>
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>Summary of your notifications</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>New: 3</p>
+            <p>Total: 15</p>
+          </CardContent>
+        </Card>
       </div>
-
-      <Card className="transition-transform hover:scale-105 hover:bg-secondary">
-        <CardHeader>
-          <CardTitle>Performance</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+          <CardHeader>
+            <CardTitle>Settings</CardTitle>
+            <CardDescription>Quick settings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Change your theme</p>
+            <p>Change your preferences</p>
+          </CardContent>
+        </Card>
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+          <CardHeader>
+            <CardTitle>Tips and Tricks</CardTitle>
+            <CardDescription>Learn new ways to improve productivity.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Explore shortcuts and commands.</p>
+          </CardContent>
+        </Card>
+          <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+          <CardHeader>
           <CardDescription>Performance graph</CardDescription>
         </CardHeader>
         <CardContent>
@@ -132,6 +160,16 @@ export const Home: React.FC = () => {
         </CardContent>
       </Card>
 
+        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+          <CardHeader>
+            <CardTitle>Stay Updated</CardTitle>
+            <CardDescription>Information about news.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Latest version information.</p>
+          </CardContent>
+        </Card>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>

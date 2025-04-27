@@ -403,13 +403,13 @@ export const AnalogClock: React.FC = () => {
   )
 };
 
-export function ClockComponent() {
+export function Clock() {
   const now = new Date();
   return (
     <div>{format(now, "HH:mm:ss")}</div>
   )
 }
-
+export {Clock as ClockComponent}
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
@@ -455,7 +455,7 @@ export {
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartContainer as Chart,
   ChartStyle,
   AnalogClock,
-  ClockComponent,
 }

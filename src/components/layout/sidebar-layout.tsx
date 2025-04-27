@@ -69,6 +69,10 @@ export const SidebarLayout: React.FC<{
                   <HomeIcon />
                   <span>Home</span>
                 </SidebarMenuButton>
+                <SidebarMenuButton onClick={() => (window.location.href = '/dashboard')}>
+                  <BarChart />
+                  <span>Dashboard</span>
+                </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => (window.location.href = '/tasks')}>
                   <ListChecks />
                   <span>Tarefas</span>

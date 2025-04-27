@@ -57,6 +57,8 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              spellCheck={false}
+              data-ms-editor={true}
             />
           </div>
           <div className="grid gap-2">
@@ -65,6 +67,8 @@ export const Login: React.FC<LoginProps> = ({onLogin}) => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              spellCheck={false}
+              data-ms-editor={true}
             />
           </div>
           <Button onClick={handleLogin}>Entrar</Button>
