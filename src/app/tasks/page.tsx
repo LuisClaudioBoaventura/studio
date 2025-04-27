@@ -1,40 +1,54 @@
 'use client';
 
-import React, {useState} from 'react';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {PlusIcon} from 'lucide-react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { PlusIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger, // Import DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
-import {Label} from '@/components/ui/label';
-import {Textarea} from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils'; // Import cn utility
 
-interface TaskCardProps {
+interface Task {
+  id: string;
   text: string;
   priority: 'Baixa' | 'Média' | 'Alta';
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({text, priority}) => {
+interface TaskCardProps {
+  task: Task;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => void;
+  sourceColumn: string;
+}
+
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart, sourceColumn }) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    onDragStart(e, task, sourceColumn);
+  };
+
   return (
-    <Card className="w-full shadow-md hover:bg-secondary transition-colors mb-2">
+    <Card
+      draggable="true"
+      onDragStart={handleDragStart}
+      className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-grab active:cursor-grabbing"
+    >
       <CardContent className="p-3">
-        <p>{text}</p>
+        <p>{task.text}</p>
         <span
-          className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-            priority === 'Alta'
-              ? 'bg-red-500 text-white'
-              : priority === 'Média'
-              ? 'bg-yellow-500 text-black'
-              : 'bg-green-500 text-white'
-          }`}
+          className={cn(
+            'text-xs px-2 py-0.5 rounded-full mt-1 inline-block',
+            task.priority === 'Alta' && 'bg-red-500 text-white',
+            task.priority === 'Média' && 'bg-yellow-500 text-black',
+            task.priority === 'Baixa' && 'bg-green-500 text-white'
+          )}
         >
-          {priority}
+          {task.priority}
         </span>
       </CardContent>
     </Card>
@@ -43,13 +57,31 @@ const TaskCard: React.FC<TaskCardProps> = ({text, priority}) => {
 
 interface TaskColumnProps {
   title: string;
-  tasks: {text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]
+  tasks: Task[];
   taskCount: number;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>, targetColumn: string) => void;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, taskCount}) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({
+  title,
+  tasks,
+  taskCount,
+  onDragStart,
+  onDrop,
+  onDragOver,
+}) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    onDrop(e, title);
+  };
+
   return (
-    <div className="flex flex-col items-center w-full min-w-[300px] bg-card p-3 rounded-lg shadow-md">
+    <div
+      className="flex flex-col items-center w-full min-w-[300px] bg-card p-3 rounded-lg shadow-md"
+      onDrop={handleDrop}
+      onDragOver={onDragOver}
+    >
       <div className="w-full mb-4">
         <CardHeader className="flex flex-row items-center justify-between p-3">
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -58,29 +90,90 @@ const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, taskCount}) => {
           </div>
         </CardHeader>
       </div>
-      <div className="w-full space-y-2 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
-        {tasks.map((task, index) => (
-          <TaskCard key={index} text={task.text} priority={task.priority} />
+      <div className="w-full space-y-2 overflow-y-auto max-h-[calc(100vh-250px)] pr-1 flex-1">
+        {tasks.map((task) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            onDragStart={onDragStart}
+            sourceColumn={title}
+          />
         ))}
       </div>
     </div>
   );
 };
 
+type ColumnTitle = 'A fazer' | 'Em progresso' | 'Concluído';
+
 const Tasks: React.FC = () => {
-  const [todoTasks, setTodoTasks] = useState<{text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]>([]);
-  const [inProgressTasks, setInProgressTasks] = useState<{text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]>([]);
-  const [completedTasks, setCompletedTasks] = useState<{text: string; priority: 'Baixa' | 'Média' | 'Alta'}[]>([]);
+  const [todoTasks, setTodoTasks] = useState<Task[]>([]);
+  const [inProgressTasks, setInProgressTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [open, setOpen] = useState(false);
-  const [newTask, setNewTask] = useState('');
+  const [newTaskText, setNewTaskText] = useState('');
   const [newPriority, setNewPriority] = useState<'Baixa' | 'Média' | 'Alta'>('Média');
 
   const handleAddTask = () => {
-    if (newTask.trim() !== '') {
-      setTodoTasks([...todoTasks, {text: newTask, priority: newPriority}]);
-      setNewTask('');
+    if (newTaskText.trim() !== '') {
+      const newTask: Task = {
+        id: `task-${Date.now()}-${Math.random()}`, // Simple unique ID generation
+        text: newTaskText,
+        priority: newPriority,
+      };
+      setTodoTasks([...todoTasks, newTask]);
+      setNewTaskText('');
+      setNewPriority('Média'); // Reset priority
       setOpen(false);
     }
+  };
+
+  const getTasksSetter = (columnTitle: ColumnTitle): React.Dispatch<React.SetStateAction<Task[]>> => {
+    if (columnTitle === 'A fazer') return setTodoTasks;
+    if (columnTitle === 'Em progresso') return setInProgressTasks;
+    return setCompletedTasks;
+  };
+
+  const getTasksState = (columnTitle: ColumnTitle): Task[] => {
+    if (columnTitle === 'A fazer') return todoTasks;
+    if (columnTitle === 'Em progresso') return inProgressTasks;
+    return completedTasks;
+  }
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => {
+    e.dataTransfer.setData('task', JSON.stringify(task));
+    e.dataTransfer.setData('sourceColumn', sourceColumn);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetColumn: ColumnTitle) => {
+    e.preventDefault();
+    const taskData = e.dataTransfer.getData('task');
+    const sourceColumn = e.dataTransfer.getData('sourceColumn') as ColumnTitle;
+
+    if (!taskData || !sourceColumn || sourceColumn === targetColumn) {
+      return; // Don't drop if no data, no source, or dropping in the same column
+    }
+
+    try {
+      const task: Task = JSON.parse(taskData);
+
+      // Remove from source column
+      const sourceSetter = getTasksSetter(sourceColumn);
+      sourceSetter(prevTasks => prevTasks.filter(t => t.id !== task.id));
+
+      // Add to target column
+      const targetSetter = getTasksSetter(targetColumn);
+      targetSetter(prevTasks => [...prevTasks, task]);
+
+    } catch (error) {
+      console.error("Failed to parse task data:", error);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
   };
 
   return (
@@ -105,8 +198,8 @@ const Tasks: React.FC = () => {
                 </Label>
                 <Input
                   id="task"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
                   className="col-span-3"
                   spellCheck={false}
                   data-ms-editor={true}
@@ -137,16 +230,25 @@ const Tasks: React.FC = () => {
           title="A fazer"
           tasks={todoTasks}
           taskCount={todoTasks.length}
+          onDragStart={handleDragStart}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
         />
         <TaskColumn
           title="Em progresso"
           tasks={inProgressTasks}
           taskCount={inProgressTasks.length}
+          onDragStart={handleDragStart}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
         />
         <TaskColumn
           title="Concluído"
           tasks={completedTasks}
           taskCount={completedTasks.length}
+          onDragStart={handleDragStart}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
         />
       </div>
     </div>
