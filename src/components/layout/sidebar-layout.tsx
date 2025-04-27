@@ -12,7 +12,7 @@ import {
   SidebarTrigger,
   SidebarInput,
 } from '@/components/ui/sidebar';
-import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon} from 'lucide-react';
+import {ListChecks, BarChart, FileBarChart, Power, Home as HomeIcon, Search} from 'lucide-react';
 import {ModeToggle} from '@/components/theme/theme-provider';
 import React, {useRef, useEffect, useState} from 'react';
 
@@ -60,7 +60,7 @@ export const SidebarLayout: React.FC<{
               </p>
               <SidebarTrigger />
             </div>
-            <SidebarInput placeholder="Search..."  />
+            <SidebarInput icon={<Search size={16} />} />
           </SidebarHeader>
           <SidebarContent ref={sidebarRef}>
             <SidebarGroup>
@@ -76,10 +76,6 @@ export const SidebarLayout: React.FC<{
                 <SidebarMenuButton onClick={() => (window.location.href = '/tasks')}>
                   <ListChecks />
                   <span>Tarefas</span>
-                </SidebarMenuButton>
-                <SidebarMenuButton onClick={() => (window.location.href = '/dashboard')}>
-                  <BarChart />
-                  <span>Dashboard</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton onClick={() => (window.location.href = '/reports')}>
                   <FileBarChart />
@@ -100,7 +96,7 @@ export const SidebarLayout: React.FC<{
             </SidebarGroup>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex-1 p-4">{children}</div>
+        <div className="flex-1 p-4 overflow-auto">{children}</div>
       </div>
     </SidebarProvider>
   );
