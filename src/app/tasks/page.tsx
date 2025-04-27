@@ -18,12 +18,25 @@ import {cn} from '@/lib/utils';
 import {Textarea} from '@/components/ui/textarea';
 import {useToast} from '@/hooks/use-toast';
 import {Check} from 'lucide-react'; // Import Check icon
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {ToggleGroup, ToggleGroupItem} from '@/components/ui/toggle-group';
 
 interface Task {
   id: string;
   title: string;
   text: string;
   priority: 'Baixa' | 'Média' | 'Alta';
+  recurrence?: {
+    frequency: 'Diário' | 'Semanal' | 'Mensal' | 'Anual';
+    interval: number;
+    days?: string[];
+  };
 }
 
 interface TaskCardProps {
@@ -52,8 +65,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
       className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-grab active:cursor-grabbing"
     >
       <CardContent className="p-3">
-        <p>{task.title}</p>
-        <p>{task.text}</p>
+        <p className="font-semibold">{task.title}</p>
+        <p className="text-sm text-muted-foreground">{task.text}</p>
         <span
           className={cn(
             'text-xs px-2 py-0.5 rounded-full mt-1 inline-block',
@@ -64,6 +77,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
           {task.priority}
         </span>
+        {/* Display recurrence info if available */}
+        {task.recurrence && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Repete {task.recurrence.frequency.toLowerCase()} a cada {task.recurrence.interval}{' '}
+            {task.recurrence.frequency === 'Semanal' && task.recurrence.days && `(${task.recurrence.days.join(', ')})`}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -123,6 +143,16 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 };
 
 type ColumnTitle = 'A fazer' | 'Em progresso' | 'Concluído';
+type RecurrenceFrequency = 'Nunca' | 'Diário' | 'Semanal' | 'Mensal' | 'Anual';
+const weekDays = [
+  { id: 'dom', label: 'do' },
+  { id: 'seg', label: '2ª' },
+  { id: 'ter', label: '3ª' },
+  { id: 'qua', label: '4ª' },
+  { id: 'qui', label: '5ª' },
+  { id: 'sex', label: '6ª' },
+  { id: 'sab', label: 'sá' },
+];
 
 const Tasks: React.FC = () => {
   const [todoTasks, setTodoTasks] = useState<Task[]>([]);
@@ -133,8 +163,30 @@ const Tasks: React.FC = () => {
   const [newTaskText, setNewTaskText] = useState('');
   const [newPriority, setNewPriority] =
     useState<'Baixa' | 'Média' | 'Alta'>('Média');
-  const [repeatTask, setRepeatTask] = useState(false); // State for repeating task
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>('Nunca');
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
+  const [recurrenceDays, setRecurrenceDays] = useState<string[]>([]);
   const {toast} = useToast();
+
+  const getFrequencyUnit = (freq: RecurrenceFrequency): string => {
+    switch (freq) {
+      case 'Diário': return 'Dia(s)';
+      case 'Semanal': return 'Semana(s)';
+      case 'Mensal': return 'Mês(es)';
+      case 'Anual': return 'Ano(s)';
+      default: return '';
+    }
+  }
+
+  const resetForm = () => {
+    setNewTaskTitle('');
+    setNewTaskText('');
+    setNewPriority('Média');
+    setRecurrenceFrequency('Nunca');
+    setRecurrenceInterval(1);
+    setRecurrenceDays([]);
+    setOpen(false);
+  }
 
   const handleAddTask = () => {
     if (newTaskText.trim() !== '') {
@@ -144,24 +196,31 @@ const Tasks: React.FC = () => {
         text: newTaskText,
         priority: newPriority,
       };
+
+      if (recurrenceFrequency !== 'Nunca') {
+        newTask.recurrence = {
+          frequency: recurrenceFrequency,
+          interval: recurrenceInterval,
+          days: recurrenceFrequency === 'Semanal' ? recurrenceDays : undefined,
+        };
+      }
+
       setTodoTasks([...todoTasks, newTask]);
-      setNewTaskTitle('');
-      setNewTaskText('');
-      setNewPriority('Média'); // Reset priority
-      setRepeatTask(false); // Reset repeat task
-      setOpen(false);
+      resetForm();
       toast({
         title: 'Tarefa adicionada com sucesso!',
+      });
+    } else {
+      toast({
+        title: 'Erro!',
+        description: 'A descrição da tarefa não pode estar vazia.',
+        variant: 'destructive',
       });
     }
   };
 
   const handleCancelAddTask = () => {
-    setNewTaskTitle('');
-    setNewTaskText('');
-    setNewPriority('Média');
-    setRepeatTask(false);
-    setOpen(false);
+    resetForm();
     toast({
       title: 'Criação de tarefa cancelada.',
     });
@@ -212,6 +271,11 @@ const Tasks: React.FC = () => {
       targetSetter((prevTasks) => [...prevTasks, task]);
     } catch (error) {
       console.error('Failed to parse task data:', error);
+      toast({
+        title: 'Erro ao mover tarefa',
+        description: 'Não foi possível processar os dados da tarefa.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -236,6 +300,7 @@ const Tasks: React.FC = () => {
               <DialogTitle>Criar nova tarefa</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/* Title Input */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">
                   Título
@@ -249,6 +314,8 @@ const Tasks: React.FC = () => {
                   data-ms-editor={true}
                 />
               </div>
+
+              {/* Task Description Textarea */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="task" className="text-right">
                   Tarefa
@@ -258,42 +325,90 @@ const Tasks: React.FC = () => {
                   value={newTaskText}
                   onChange={(e) => setNewTaskText(e.target.value)}
                   className="col-span-3"
+                  placeholder="Descreva sua tarefa (suporta Markdown)"
                   spellCheck={false}
                   data-ms-editor={true}
                 />
               </div>
+
+              {/* Priority Select */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="priority" className="text-right">
                   Prioridade
                 </Label>
-                <select
-                  id="priority"
+                <Select
                   value={newPriority}
-                  onChange={(e) =>
-                    setNewPriority(e.target.value as 'Baixa' | 'Média' | 'Alta')
-                  }
-                  className="col-span-3 bg-background border border-input rounded-md px-3 py-2 text-sm focus:ring-ring focus:border-ring"
+                  onValueChange={(value: 'Baixa' | 'Média' | 'Alta') => setNewPriority(value)}
                 >
-                  <option value="Baixa">Baixa</option>
-                  <option value="Média">Média</option>
-                  <option value="Alta">Alta</option>
-                </select>
+                  <SelectTrigger id="priority" className="col-span-3">
+                    <SelectValue placeholder="Selecione a prioridade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Baixa">Baixa</SelectItem>
+                    <SelectItem value="Média">Média</SelectItem>
+                    <SelectItem value="Alta">Alta</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="repeat"
-                  checked={repeatTask}
-                  onChange={(e) => setRepeatTask(e.target.checked)}
-                  className="h-4 w-4 rounded border-primary text-primary shadow-sm focus:ring-ring"
-                />
-                <label
-                  htmlFor="repeat"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Repetir tarefa
-                </label>
-              </div>
+
+              {/* Recurrence Section */}
+               <div className="grid grid-cols-4 items-center gap-4">
+                 <Label className="text-right">Repetição</Label>
+                 <Select
+                   value={recurrenceFrequency}
+                   onValueChange={(value: RecurrenceFrequency) => setRecurrenceFrequency(value)}
+                 >
+                   <SelectTrigger id="recurrence" className="col-span-3">
+                     <SelectValue placeholder="Selecione a frequência" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="Nunca">Nunca</SelectItem>
+                     <SelectItem value="Diário">Diário</SelectItem>
+                     <SelectItem value="Semanal">Semanal</SelectItem>
+                     <SelectItem value="Mensal">Mensal</SelectItem>
+                     <SelectItem value="Anual">Anual</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+
+               {recurrenceFrequency !== 'Nunca' && (
+                 <>
+                   <div className="grid grid-cols-4 items-center gap-4">
+                     <Label htmlFor="interval" className="text-right">A cada</Label>
+                     <div className="col-span-3 flex items-center gap-2">
+                       <Input
+                         id="interval"
+                         type="number"
+                         min="1"
+                         value={recurrenceInterval}
+                         onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value) || 1))}
+                         className="w-1/2"
+                       />
+                       <span className="text-sm text-muted-foreground">{getFrequencyUnit(recurrenceFrequency)}</span>
+                     </div>
+                   </div>
+
+                   {recurrenceFrequency === 'Semanal' && (
+                     <div className="grid grid-cols-4 items-center gap-4">
+                       <Label className="text-right">Repete-se</Label>
+                       <ToggleGroup
+                         type="multiple"
+                         variant="outline"
+                         value={recurrenceDays}
+                         onValueChange={setRecurrenceDays}
+                         className="col-span-3 justify-start flex-wrap"
+                       >
+                         {weekDays.map(day => (
+                           <ToggleGroupItem key={day.id} value={day.id} aria-label={`Repetir em ${day.label}`} className="px-2 py-1 h-auto text-xs">
+                             {day.label}
+                           </ToggleGroupItem>
+                         ))}
+                       </ToggleGroup>
+                     </div>
+                   )}
+                 </>
+               )}
+
             </div>
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="secondary" onClick={handleCancelAddTask}>
@@ -337,3 +452,71 @@ const Tasks: React.FC = () => {
 };
 
 export default Tasks;
+
+```]
+    </content>
+  </change>
+  <change>
+    <file>src/components/ui/toggle-group.tsx</file>
+    <description>Add new ToggleGroup component for selecting multiple options (like days of the week).</description>
+    <content><![CDATA["use client"
+
+import * as React from "react"
+import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+import { toggleVariants } from "@/components/ui/toggle"
+
+const ToggleGroupContext = React.createContext<
+  VariantProps<typeof toggleVariants>
+>({
+  size: "default",
+  variant: "default",
+})
+
+const ToggleGroup = React.forwardRef<
+  React.ElementRef<typeof ToggleGroupPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
+    VariantProps<typeof toggleVariants>
+>(({ className, variant, size, children, ...props }, ref) => (
+  <ToggleGroupPrimitive.Root
+    ref={ref}
+    className={cn("flex items-center justify-center gap-1", className)}
+    {...props}
+  >
+    <ToggleGroupContext.Provider value={{ variant, size }}>
+      {children}
+    </ToggleGroupContext.Provider>
+  </ToggleGroupPrimitive.Root>
+))
+
+ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
+
+const ToggleGroupItem = React.forwardRef<
+  React.ElementRef<typeof ToggleGroupPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
+    VariantProps<typeof toggleVariants>
+>(({ className, children, variant, size, ...props }, ref) => {
+  const context = React.useContext(ToggleGroupContext)
+
+  return (
+    <ToggleGroupPrimitive.Item
+      ref={ref}
+      className={cn(
+        toggleVariants({
+          variant: context.variant || variant,
+          size: context.size || size,
+        }),
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </ToggleGroupPrimitive.Item>
+  )
+})
+
+ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName
+
+export { ToggleGroup, ToggleGroupItem }
