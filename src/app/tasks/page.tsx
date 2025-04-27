@@ -21,6 +21,7 @@ import {Check} from 'lucide-react'; // Import Check icon
 
 interface Task {
   id: string;
+  title: string;
   text: string;
   priority: 'Baixa' | 'Média' | 'Alta';
 }
@@ -51,6 +52,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-grab active:cursor-grabbing"
     >
       <CardContent className="p-3">
+        <p>{task.title}</p>
         <p>{task.text}</p>
         <span
           className={cn(
@@ -127,6 +129,7 @@ const Tasks: React.FC = () => {
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [open, setOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskText, setNewTaskText] = useState('');
   const [newPriority, setNewPriority] =
     useState<'Baixa' | 'Média' | 'Alta'>('Média');
@@ -137,10 +140,12 @@ const Tasks: React.FC = () => {
     if (newTaskText.trim() !== '') {
       const newTask: Task = {
         id: `task-${Date.now()}-${Math.random()}`, // Simple unique ID generation
+        title: newTaskTitle,
         text: newTaskText,
         priority: newPriority,
       };
       setTodoTasks([...todoTasks, newTask]);
+      setNewTaskTitle('');
       setNewTaskText('');
       setNewPriority('Média'); // Reset priority
       setRepeatTask(false); // Reset repeat task
@@ -152,6 +157,7 @@ const Tasks: React.FC = () => {
   };
 
   const handleCancelAddTask = () => {
+    setNewTaskTitle('');
     setNewTaskText('');
     setNewPriority('Média');
     setRepeatTask(false);
@@ -231,6 +237,19 @@ const Tasks: React.FC = () => {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title" className="text-right">
+                  Título
+                </Label>
+                <Input
+                  id="title"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  className="col-span-3"
+                  spellCheck={false}
+                  data-ms-editor={true}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="task" className="text-right">
                   Tarefa
                 </Label>
@@ -266,7 +285,7 @@ const Tasks: React.FC = () => {
                   id="repeat"
                   checked={repeatTask}
                   onChange={(e) => setRepeatTask(e.target.checked)}
-                  className="h-4 w-4 rounded border-primary text-primary shadow-sm focus:ring-primary"
+                  className="h-4 w-4 rounded border-primary text-primary shadow-sm focus:ring-ring"
                 />
                 <label
                   htmlFor="repeat"
