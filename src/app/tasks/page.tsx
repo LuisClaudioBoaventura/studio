@@ -5,7 +5,13 @@ import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {PlusIcon} from 'lucide-react';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger, // Import DialogTrigger
+} from '@/components/ui/dialog';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 
@@ -16,9 +22,20 @@ interface TaskCardProps {
 
 const TaskCard: React.FC<TaskCardProps> = ({text, priority}) => {
   return (
-    <Card className="w-full shadow-md hover:bg-secondary transition-colors">
-      <CardContent>
+    <Card className="w-full shadow-md hover:bg-secondary transition-colors mb-2">
+      <CardContent className="p-3">
         <p>{text}</p>
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
+            priority === 'Alta'
+              ? 'bg-red-500 text-white'
+              : priority === 'Média'
+              ? 'bg-yellow-500 text-black'
+              : 'bg-green-500 text-white'
+          }`}
+        >
+          {priority}
+        </span>
       </CardContent>
     </Card>
   );
@@ -32,18 +49,20 @@ interface TaskColumnProps {
 
 const TaskColumn: React.FC<TaskColumnProps> = ({title, tasks, taskCount}) => {
   return (
-    <div className="flex flex-col items-center w-full min-w-[300px]">
-      <Card className="w-full mb-4 shadow-md">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-center">{title}</CardTitle>
-          <div className="rounded-full bg-secondary text-secondary-foreground h-6 w-6 flex items-center justify-center text-xs">
+    <div className="flex flex-col items-center w-full min-w-[300px] bg-card p-3 rounded-lg shadow-md">
+      <div className="w-full mb-4">
+        <CardHeader className="flex flex-row items-center justify-between p-3">
+          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+          <div className="rounded-full bg-secondary text-secondary-foreground h-6 w-6 flex items-center justify-center text-xs font-bold">
             {taskCount}
           </div>
         </CardHeader>
-      </Card>
-      {tasks.map((task, index) => (
-        <TaskCard key={index} text={task.text} priority={task.priority} />
-      ))}
+      </div>
+      <div className="w-full space-y-2 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
+        {tasks.map((task, index) => (
+          <TaskCard key={index} text={task.text} priority={task.priority} />
+        ))}
+      </div>
     </div>
   );
 };
@@ -65,7 +84,7 @@ const Tasks: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Quadro Kanban</h1>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -75,13 +94,13 @@ const Tasks: React.FC = () => {
               Criar Tarefa
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-lg shadow-lg">
             <DialogHeader>
               <DialogTitle>Criar nova tarefa</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+                <Label htmlFor="task" className="text-right">
                   Tarefa
                 </Label>
                 <Input
@@ -89,6 +108,8 @@ const Tasks: React.FC = () => {
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
                   className="col-span-3"
+                  spellCheck={false}
+                  data-ms-editor={true}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -99,7 +120,7 @@ const Tasks: React.FC = () => {
                   id="priority"
                   value={newPriority}
                   onChange={(e) => setNewPriority(e.target.value as 'Baixa' | 'Média' | 'Alta')}
-                  className="col-span-3 bg-background border border-input rounded-md px-3 py-2 text-sm"
+                  className="col-span-3 bg-background border border-input rounded-md px-3 py-2 text-sm focus:ring-ring focus:border-ring"
                 >
                   <option value="Baixa">Baixa</option>
                   <option value="Média">Média</option>
@@ -111,7 +132,7 @@ const Tasks: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="flex justify-center space-x-4 overflow-x-auto">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-x-auto pb-4">
         <TaskColumn
           title="A fazer"
           tasks={todoTasks}
