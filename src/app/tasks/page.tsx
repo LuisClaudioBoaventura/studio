@@ -1,19 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PlusIcon } from 'lucide-react';
+import React, {useState} from 'react';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {PlusIcon} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils'; // Import cn utility
+import {Label} from '@/components/ui/label';
+import {cn} from '@/lib/utils';
+import {Textarea} from '@/components/ui/textarea';
+import {useToast} from '@/hooks/use-toast';
+import {Check} from 'lucide-react'; // Import Check icon
 
 interface Task {
   id: string;
@@ -23,11 +27,19 @@ interface Task {
 
 interface TaskCardProps {
   task: Task;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => void;
+  onDragStart: (
+    e: React.DragEvent<HTMLDivElement>,
+    task: Task,
+    sourceColumn: string
+  ) => void;
   sourceColumn: string;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDragStart, sourceColumn }) => {
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onDragStart,
+  sourceColumn,
+}) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, task, sourceColumn);
   };
@@ -59,7 +71,11 @@ interface TaskColumnProps {
   title: string;
   tasks: Task[];
   taskCount: number;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => void;
+  onDragStart: (
+    e: React.DragEvent<HTMLDivElement>,
+    task: Task,
+    sourceColumn: string
+  ) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, targetColumn: string) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
 }
@@ -112,7 +128,10 @@ const Tasks: React.FC = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [open, setOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
-  const [newPriority, setNewPriority] = useState<'Baixa' | 'Média' | 'Alta'>('Média');
+  const [newPriority, setNewPriority] =
+    useState<'Baixa' | 'Média' | 'Alta'>('Média');
+  const [repeatTask, setRepeatTask] = useState(false); // State for repeating task
+  const {toast} = useToast();
 
   const handleAddTask = () => {
     if (newTaskText.trim() !== '') {
@@ -124,11 +143,27 @@ const Tasks: React.FC = () => {
       setTodoTasks([...todoTasks, newTask]);
       setNewTaskText('');
       setNewPriority('Média'); // Reset priority
+      setRepeatTask(false); // Reset repeat task
       setOpen(false);
+      toast({
+        title: 'Tarefa adicionada com sucesso!',
+      });
     }
   };
 
-  const getTasksSetter = (columnTitle: ColumnTitle): React.Dispatch<React.SetStateAction<Task[]>> => {
+  const handleCancelAddTask = () => {
+    setNewTaskText('');
+    setNewPriority('Média');
+    setRepeatTask(false);
+    setOpen(false);
+    toast({
+      title: 'Criação de tarefa cancelada.',
+    });
+  };
+
+  const getTasksSetter = (
+    columnTitle: ColumnTitle
+  ): React.Dispatch<React.SetStateAction<Task[]>> => {
     if (columnTitle === 'A fazer') return setTodoTasks;
     if (columnTitle === 'Em progresso') return setInProgressTasks;
     return setCompletedTasks;
@@ -138,9 +173,13 @@ const Tasks: React.FC = () => {
     if (columnTitle === 'A fazer') return todoTasks;
     if (columnTitle === 'Em progresso') return inProgressTasks;
     return completedTasks;
-  }
+  };
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, task: Task, sourceColumn: string) => {
+  const handleDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    task: Task,
+    sourceColumn: string
+  ) => {
     e.dataTransfer.setData('task', JSON.stringify(task));
     e.dataTransfer.setData('sourceColumn', sourceColumn);
     e.dataTransfer.effectAllowed = 'move';
@@ -160,14 +199,13 @@ const Tasks: React.FC = () => {
 
       // Remove from source column
       const sourceSetter = getTasksSetter(sourceColumn);
-      sourceSetter(prevTasks => prevTasks.filter(t => t.id !== task.id));
+      sourceSetter((prevTasks) => prevTasks.filter((t) => t.id !== task.id));
 
       // Add to target column
       const targetSetter = getTasksSetter(targetColumn);
-      targetSetter(prevTasks => [...prevTasks, task]);
-
+      targetSetter((prevTasks) => [...prevTasks, task]);
     } catch (error) {
-      console.error("Failed to parse task data:", error);
+      console.error('Failed to parse task data:', error);
     }
   };
 
@@ -196,7 +234,7 @@ const Tasks: React.FC = () => {
                 <Label htmlFor="task" className="text-right">
                   Tarefa
                 </Label>
-                <Input
+                <Textarea
                   id="task"
                   value={newTaskText}
                   onChange={(e) => setNewTaskText(e.target.value)}
@@ -212,7 +250,9 @@ const Tasks: React.FC = () => {
                 <select
                   id="priority"
                   value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value as 'Baixa' | 'Média' | 'Alta')}
+                  onChange={(e) =>
+                    setNewPriority(e.target.value as 'Baixa' | 'Média' | 'Alta')
+                  }
                   className="col-span-3 bg-background border border-input rounded-md px-3 py-2 text-sm focus:ring-ring focus:border-ring"
                 >
                   <option value="Baixa">Baixa</option>
@@ -220,8 +260,30 @@ const Tasks: React.FC = () => {
                   <option value="Alta">Alta</option>
                 </select>
               </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="repeat"
+                  checked={repeatTask}
+                  onChange={(e) => setRepeatTask(e.target.checked)}
+                  className="h-4 w-4 rounded border-primary text-primary shadow-sm focus:ring-primary"
+                />
+                <label
+                  htmlFor="repeat"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Repetir tarefa
+                </label>
+              </div>
             </div>
-            <Button type="submit" onClick={handleAddTask}>Criar tarefa</Button>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="secondary" onClick={handleCancelAddTask}>
+                Cancelar
+              </Button>
+              <Button type="submit" onClick={handleAddTask}>
+                Criar tarefa
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
