@@ -4,7 +4,7 @@ import React, {useState} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {PlusIcon} from 'lucide-react';
+import {PlusIcon, EditIcon} from 'lucide-react'; // Added EditIcon if needed, or handle click differently
 import {
   Dialog,
   DialogContent,
@@ -48,22 +48,29 @@ interface TaskCardProps {
     sourceColumn: string
   ) => void;
   sourceColumn: string;
+  onEditClick: (task: Task) => void; // Add prop for edit click
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onDragStart,
   sourceColumn,
+  onEditClick,
 }) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, task, sourceColumn);
+  };
+
+  const handleEditClick = () => {
+    onEditClick(task);
   };
 
   return (
     <Card
       draggable="true"
       onDragStart={handleDragStart}
-      className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-grab active:cursor-grabbing"
+      onClick={handleEditClick} // Add onClick handler
+      className="w-full shadow-md hover:bg-secondary transition-colors mb-2 cursor-pointer active:cursor-grabbing" // Added cursor-pointer
     >
       <CardContent className="p-3">
         <p className="font-semibold">{task.title}</p>
@@ -78,7 +85,6 @@ const TaskCard: React.FC<TaskCardProps> = ({
         >
           {task.priority}
         </span>
-        {/* Display recurrence info if available */}
         {task.recurrence && (
           <p className="text-xs text-muted-foreground mt-1">
             Repete {task.recurrence.frequency.toLowerCase()} a cada {task.recurrence.interval}{' '}
@@ -101,6 +107,7 @@ interface TaskColumnProps {
   ) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, targetColumn: string) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  onEditClick: (task: Task) => void; // Pass edit handler down
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({
@@ -110,6 +117,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
   onDragStart,
   onDrop,
   onDragOver,
+  onEditClick,
 }) => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     onDrop(e, title);
@@ -136,6 +144,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
             task={task}
             onDragStart={onDragStart}
             sourceColumn={title}
+            onEditClick={onEditClick} // Pass handler to TaskCard
           />
         ))}
       </div>
@@ -167,6 +176,7 @@ const Tasks: React.FC = () => {
   const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency>('Nunca');
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceDays, setRecurrenceDays] = useState<string[]>([]);
+  const [editingTask, setEditingTask] = useState<Task | null>(null); // State for the task being edited
   const {toast} = useToast();
 
   const getFrequencyUnit = (freq: RecurrenceFrequency): string => {
@@ -186,46 +196,123 @@ const Tasks: React.FC = () => {
     setRecurrenceFrequency('Nunca');
     setRecurrenceInterval(1);
     setRecurrenceDays([]);
+    setEditingTask(null); // Reset editing task
     setOpen(false);
   }
 
-  const handleAddTask = () => {
-    if (newTaskText.trim() !== '') {
-      const newTask: Task = {
-        id: `task-${Date.now()}-${Math.random()}`, // Simple unique ID generation
-        title: newTaskTitle,
-        text: newTaskText,
-        priority: newPriority,
-      };
-
-      if (recurrenceFrequency !== 'Nunca') {
-        newTask.recurrence = {
-          frequency: recurrenceFrequency,
-          interval: recurrenceInterval,
-          days: recurrenceFrequency === 'Semanal' ? recurrenceDays : undefined,
-        };
-      }
-
-      setTodoTasks([...todoTasks, newTask]);
-      resetForm();
-      toast({
-        title: 'Tarefa adicionada com sucesso!',
-      });
+  const handleFormSubmit = () => {
+    if (editingTask) {
+      handleUpdateTask();
     } else {
+      handleAddTask();
+    }
+  }
+
+  const handleAddTask = () => {
+    if (newTaskText.trim() === '') {
+       toast({
+         title: 'Erro!',
+         description: 'A descrição da tarefa não pode estar vazia.',
+         variant: 'destructive',
+       });
+       return;
+    }
+
+     const newTask: Task = {
+       id: `task-${Date.now()}-${Math.random()}`, // Simple unique ID generation
+       title: newTaskTitle || 'Tarefa sem título', // Default title
+       text: newTaskText,
+       priority: newPriority,
+     };
+
+     if (recurrenceFrequency !== 'Nunca') {
+       newTask.recurrence = {
+         frequency: recurrenceFrequency,
+         interval: recurrenceInterval,
+         days: recurrenceFrequency === 'Semanal' ? recurrenceDays : undefined,
+       };
+     }
+
+     setTodoTasks([...todoTasks, newTask]);
+     resetForm();
+     toast({
+       title: 'Tarefa adicionada com sucesso!',
+     });
+  };
+
+  const handleUpdateTask = () => {
+    if (!editingTask || newTaskText.trim() === '') {
       toast({
-        title: 'Erro!',
-        description: 'A descrição da tarefa não pode estar vazia.',
+        title: 'Erro ao atualizar!',
+        description: 'Dados da tarefa inválidos.',
         variant: 'destructive',
       });
+      return;
     }
-  };
 
-  const handleCancelAddTask = () => {
+    const updatedTask: Task = {
+      ...editingTask,
+      title: newTaskTitle || 'Tarefa sem título',
+      text: newTaskText,
+      priority: newPriority,
+    };
+
+    if (recurrenceFrequency !== 'Nunca') {
+      updatedTask.recurrence = {
+        frequency: recurrenceFrequency,
+        interval: recurrenceInterval,
+        days: recurrenceFrequency === 'Semanal' ? recurrenceDays : undefined,
+      };
+    } else {
+      delete updatedTask.recurrence; // Remove recurrence if set to 'Nunca'
+    }
+
+    // Find and update the task in the correct column
+    const updateInColumn = (setter: React.Dispatch<React.SetStateAction<Task[]>>) => {
+      setter(prevTasks => prevTasks.map(t => t.id === editingTask.id ? updatedTask : t));
+    };
+
+    if (todoTasks.some(t => t.id === editingTask.id)) {
+      updateInColumn(setTodoTasks);
+    } else if (inProgressTasks.some(t => t.id === editingTask.id)) {
+      updateInColumn(setInProgressTasks);
+    } else if (completedTasks.some(t => t.id === editingTask.id)) {
+      updateInColumn(setCompletedTasks);
+    }
+
     resetForm();
     toast({
-      title: 'Criação de tarefa cancelada.',
+      title: 'Tarefa atualizada com sucesso!',
     });
   };
+
+
+  const handleCancelAction = () => {
+    resetForm();
+    toast({
+      title: editingTask ? 'Edição cancelada.' : 'Criação de tarefa cancelada.',
+      variant: 'default',
+    });
+  };
+
+  // Function to open the modal in edit mode
+  const openEditModal = (task: Task) => {
+    setEditingTask(task);
+    setNewTaskTitle(task.title);
+    setNewTaskText(task.text);
+    setNewPriority(task.priority);
+    if (task.recurrence) {
+      setRecurrenceFrequency(task.recurrence.frequency);
+      setRecurrenceInterval(task.recurrence.interval);
+      setRecurrenceDays(task.recurrence.days || []);
+    } else {
+      setRecurrenceFrequency('Nunca');
+      setRecurrenceInterval(1);
+      setRecurrenceDays([]);
+    }
+    setOpen(true);
+  };
+
 
   const getTasksSetter = (
     columnTitle: ColumnTitle
@@ -289,7 +376,10 @@ const Tasks: React.FC = () => {
     <div className="p-4 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Quadro Kanban</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => {
+          if (!isOpen) resetForm(); // Reset form when dialog closes
+          setOpen(isOpen);
+        }}>
           <DialogTrigger asChild>
             <Button>
               <PlusIcon className="mr-2" />
@@ -298,7 +388,7 @@ const Tasks: React.FC = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-lg shadow-lg">
             <DialogHeader>
-              <DialogTitle>Criar nova tarefa</DialogTitle>
+              <DialogTitle>{editingTask ? 'Editar Tarefa' : 'Criar nova tarefa'}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {/* Title Input */}
@@ -414,11 +504,11 @@ const Tasks: React.FC = () => {
 
             </div>
             <div className="flex justify-end space-x-2">
-              <Button type="button" variant="secondary" onClick={handleCancelAddTask}>
+              <Button type="button" variant="secondary" onClick={handleCancelAction}>
                 Cancelar
               </Button>
-              <Button type="submit" onClick={handleAddTask}>
-                Criar tarefa
+              <Button type="submit" onClick={handleFormSubmit}>
+                {editingTask ? 'Atualizar Tarefa' : 'Criar tarefa'}
               </Button>
             </div>
           </DialogContent>
@@ -432,6 +522,7 @@ const Tasks: React.FC = () => {
           onDragStart={handleDragStart}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
+          onEditClick={openEditModal} // Pass edit handler
         />
         <TaskColumn
           title="Em progresso"
@@ -440,6 +531,7 @@ const Tasks: React.FC = () => {
           onDragStart={handleDragStart}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
+          onEditClick={openEditModal} // Pass edit handler
         />
         <TaskColumn
           title="Concluído"
@@ -448,6 +540,7 @@ const Tasks: React.FC = () => {
           onDragStart={handleDragStart}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
+          onEditClick={openEditModal} // Pass edit handler
         />
       </div>
     </div>
