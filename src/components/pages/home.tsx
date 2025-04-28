@@ -118,8 +118,8 @@ export const Home: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p>A fazer: {taskCounts.todo}</p>
-            <p>Concluído: {taskCounts.completed}</p>
             <p>Em progresso: {taskCounts.inProgress}</p>
+            <p>Concluído: {taskCounts.completed}</p>
           </CardContent>
         </Card>
 
