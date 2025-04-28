@@ -15,6 +15,9 @@ const AnalogClock = () => {
   const minuteHandRef = useRef<HTMLDivElement>(null);
   const secondHandRef = useRef<HTMLDivElement>(null);
 
+  const radius = 70; // Radius for the tracks
+  const circumference = 2 * Math.PI * radius;
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTime(new Date());
@@ -54,34 +57,81 @@ const AnalogClock = () => {
     }
   };
 
+  const seconds = time.getSeconds();
+  const minutes = time.getMinutes();
+
+  const secondsOffset = circumference * (1 - seconds / 60);
+  const minutesOffset = circumference * (1 - minutes / 60);
+
+
   return (
-    <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted flex items-center justify-center shadow-inner">
-      {/* Clock face numbers/markers (optional) */}
-      {/* ... */}
+    <div className="relative w-48 h-48 flex items-center justify-center">
+      {/* SVG Container for Tracks */}
+       <svg className="absolute w-full h-full" viewBox="0 0 160 160">
+         {/* Base Track */}
+         <circle
+           cx="80"
+           cy="80"
+           r={radius}
+           fill="none"
+           stroke="hsl(var(--muted))"
+           strokeWidth="6"
+         />
+         {/* Minutes Track */}
+         <circle
+           cx="80"
+           cy="80"
+           r={radius}
+           fill="none"
+           stroke="hsl(var(--foreground))"
+           strokeWidth="6"
+           strokeDasharray={circumference}
+           strokeDashoffset={minutesOffset}
+           transform="rotate(-90 80 80)"
+           style={{ transition: 'stroke-dashoffset 0.5s linear' }}
+         />
+         {/* Seconds Track (Slightly smaller radius) */}
+          <circle
+            cx="80"
+            cy="80"
+            r={radius - 8} // Slightly smaller radius
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth="4" // Thinner stroke
+            strokeDasharray={2 * Math.PI * (radius - 8)}
+            strokeDashoffset={2 * Math.PI * (radius - 8) * (1 - seconds / 60)}
+            transform="rotate(-90 80 80)"
+            style={{ transition: 'stroke-dashoffset 1s linear' }} // Use linear for smoother second hand feel
+          />
+       </svg>
 
-      {/* Center Dot */}
-      <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
+      {/* Clock Face - Div based */}
+      <div className="relative w-full h-full rounded-full bg-secondary border-2 border-muted flex items-center justify-center shadow-inner">
 
-      {/* Hands Container - positioned absolutely at the center */}
-      <div className="absolute top-1/2 left-1/2 w-0 h-0">
-        {/* Hour Hand */}
-        <div
-          ref={hourHandRef}
-          className="absolute bottom-0 left-1/2 w-1.5 h-[25%] bg-foreground origin-bottom rounded-t-full"
-          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-        />
-        {/* Minute Hand */}
-        <div
-          ref={minuteHandRef}
-          className="absolute bottom-0 left-1/2 w-1 h-[35%] bg-foreground origin-bottom rounded-t-full"
-          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-        />
-        {/* Second Hand */}
-        <div
-          ref={secondHandRef}
-          className="absolute bottom-0 left-1/2 w-0.5 h-[40%] bg-primary origin-bottom rounded-t-full"
-          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-        />
+        {/* Center Dot */}
+        <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
+
+        {/* Hands Container - positioned absolutely at the center */}
+        <div className="absolute top-1/2 left-1/2 w-0 h-0">
+          {/* Hour Hand */}
+          <div
+            ref={hourHandRef}
+            className="absolute bottom-0 left-1/2 w-1.5 h-[25%] bg-foreground origin-bottom rounded-t-full"
+            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+          />
+          {/* Minute Hand */}
+          <div
+            ref={minuteHandRef}
+            className="absolute bottom-0 left-1/2 w-1 h-[35%] bg-foreground origin-bottom rounded-t-full"
+            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+          />
+          {/* Second Hand */}
+          <div
+            ref={secondHandRef}
+            className="absolute bottom-0 left-1/2 w-0.5 h-[40%] bg-primary origin-bottom rounded-t-full"
+            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+          />
+        </div>
       </div>
     </div>
   );
