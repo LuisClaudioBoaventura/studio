@@ -2,8 +2,11 @@
 
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Calendar} from '@/components/ui/calendar';
+import {Progress} from '@/components/ui/progress'; // Import Progress
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip'; // Import Tooltip components
 import {useEffect, useRef, useState} from 'react';
 import {loadTasksFromLocalStorage, Task} from '@/app/tasks/page'; // Import Task and loader
+import { differenceInDays, endOfWeek, endOfMonth, endOfYear, format, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
 
 const AnalogClock = () => {
   const [time, setTime] = useState(new Date());
@@ -95,10 +98,80 @@ interface TaskCounts {
   completed: number;
 }
 
+const DaysRemainingCard: React.FC = () => {
+  const [now] = useState(new Date()); // Use state to ensure consistency on client
+
+  // Calculate remaining days (ensure calculations are client-side or consistent)
+  const daysLeftInWeek = differenceInDays(endOfWeek(now), now);
+  const daysLeftInMonth = differenceInDays(endOfMonth(now), now);
+  const daysLeftInYear = differenceInDays(endOfYear(now), now);
+
+  // Calculate total days for percentage
+  const totalDaysInWeek = differenceInDays(endOfWeek(now), startOfWeek(now)) + 1;
+  const totalDaysInMonth = differenceInDays(endOfMonth(now), startOfMonth(now)) + 1;
+  const totalDaysInYear = differenceInDays(endOfYear(now), startOfYear(now)) + 1;
+
+  // Calculate progress percentage (days passed / total days)
+  const weekProgress = ((totalDaysInWeek - daysLeftInWeek) / totalDaysInWeek) * 100;
+  const monthProgress = ((totalDaysInMonth - daysLeftInMonth) / totalDaysInMonth) * 100;
+  const yearProgress = ((totalDaysInYear - daysLeftInYear) / totalDaysInYear) * 100;
+
+  return (
+    <Card className="transition-transform hover:scale-105 hover:bg-secondary">
+      <CardHeader>
+        <CardTitle>Dias Restantes</CardTitle>
+        <CardDescription>Dias restantes até o fim de...</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <TooltipProvider>
+          {/* Week */}
+          <div>
+            <p className="mb-1">Semana</p>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Progress value={weekProgress} aria-label={`${daysLeftInWeek} dias restantes na semana`} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{daysLeftInWeek} dias restantes</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          {/* Month */}
+          <div>
+            <p className="mb-1">Mês</p>
+             <Tooltip>
+               <TooltipTrigger asChild>
+                 <Progress value={monthProgress} aria-label={`${daysLeftInMonth} dias restantes no mês`} />
+               </TooltipTrigger>
+               <TooltipContent>
+                 <p>{daysLeftInMonth} dias restantes</p>
+               </TooltipContent>
+             </Tooltip>
+          </div>
+          {/* Year */}
+          <div>
+            <p className="mb-1">Ano</p>
+             <Tooltip>
+               <TooltipTrigger asChild>
+                 <Progress value={yearProgress} aria-label={`${daysLeftInYear} dias restantes no ano`} />
+               </TooltipTrigger>
+               <TooltipContent>
+                 <p>{daysLeftInYear} dias restantes</p>
+               </TooltipContent>
+             </Tooltip>
+          </div>
+        </TooltipProvider>
+      </CardContent>
+    </Card>
+  );
+};
+
+
 export const Home: React.FC = () => {
   const [taskCounts, setTaskCounts] = useState<TaskCounts>({ todo: 0, inProgress: 0, completed: 0 });
 
   useEffect(() => {
+    // Ensure this runs only on the client after hydration
     const loadedTasks = loadTasksFromLocalStorage();
     setTaskCounts({
       todo: loadedTasks.todo.length,
@@ -196,17 +269,7 @@ export const Home: React.FC = () => {
         </Card>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="transition-transform hover:scale-105 hover:bg-secondary">
-          <CardHeader>
-            <CardTitle>Dias Restantes</CardTitle>
-            <CardDescription>Dias restantes até o fim de...</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Semana: 3 dias</p>
-            <p>Mês: 10 dias</p>
-            <p>Ano: 200 dias</p>
-          </CardContent>
-        </Card>
+        <DaysRemainingCard />
         <Card className="transition-transform hover:scale-105 hover:bg-secondary">
           <CardHeader>
             <CardTitle>Relógio</CardTitle>
@@ -230,3 +293,5 @@ export const Home: React.FC = () => {
     </div>
   );
 };
+
+    
