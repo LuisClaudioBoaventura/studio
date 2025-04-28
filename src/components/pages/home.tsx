@@ -7,6 +7,7 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/compon
 import {useEffect, useRef, useState} from 'react';
 import {loadTasksFromLocalStorage, Task} from '@/app/tasks/page'; // Import Task and loader
 import { differenceInDays, endOfWeek, endOfMonth, endOfYear, format, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import { ptBR } from 'date-fns/locale'; // Import ptBR locale for month name
 
 const AnalogClock = () => {
   const [time, setTime] = useState(new Date());
@@ -116,6 +117,12 @@ const DaysRemainingCard: React.FC = () => {
   const monthProgress = ((totalDaysInMonth - daysLeftInMonth) / totalDaysInMonth) * 100;
   const yearProgress = ((totalDaysInYear - daysLeftInYear) / totalDaysInYear) * 100;
 
+  // Get current month name
+  const currentMonthName = format(now, 'MMMM', { locale: ptBR });
+  // Capitalize first letter
+  const formattedMonthName = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
+
+
   return (
     <Card className="transition-transform hover:scale-105 hover:bg-secondary">
       <CardHeader>
@@ -138,7 +145,7 @@ const DaysRemainingCard: React.FC = () => {
           </div>
           {/* Month */}
           <div>
-            <p className="mb-1">Mês</p>
+            <p className="mb-1">Mês ({formattedMonthName})</p> {/* Display month name */}
              <Tooltip>
                <TooltipTrigger asChild>
                  <Progress value={monthProgress} aria-label={`${daysLeftInMonth} dias restantes no mês`} />
