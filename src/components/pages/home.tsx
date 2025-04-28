@@ -8,131 +8,73 @@ import {useEffect, useRef, useState} from 'react';
 import {loadTasksFromLocalStorage, Task} from '@/app/tasks/page'; // Import Task and loader
 import { differenceInDays, endOfWeek, endOfMonth, endOfYear, format, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale'; // Import ptBR locale for month name
+import { cn } from '@/lib/utils'; // Import cn utility
 
-const AnalogClock = () => {
+const BarClock = () => {
   const [time, setTime] = useState(new Date());
-  const hourHandRef = useRef<HTMLDivElement>(null);
-  const minuteHandRef = useRef<HTMLDivElement>(null);
-  const secondHandRef = useRef<HTMLDivElement>(null);
-
-  const radius = 70; // Radius for the tracks
-  const circumference = 2 * Math.PI * radius;
+  const clockSize = 200; // Clock diameter in px
+  const barWidth = 4;
+  const barHeight = 20;
+  const hourBarHeight = 30;
+  const numBars = 60;
+  const radius = clockSize / 2;
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTime(new Date());
     }, 1000);
 
-    // Initial update to set hands immediately
-    updateHands(new Date());
-
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []);
 
-  useEffect(() => {
-    updateHands(time);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [time]); // Update hands whenever time changes
-
-  const updateHands = (currentTime: Date) => {
-    const hours = currentTime.getHours();
-    const minutes = currentTime.getMinutes();
-    const seconds = currentTime.getSeconds();
-
-    // Calculate rotations
-    const hourRotation = (hours % 12 + minutes / 60) * 30; // 360 / 12 = 30 degrees per hour
-    const minuteRotation = (minutes + seconds / 60) * 6; // 360 / 60 = 6 degrees per minute
-    const secondRotation = seconds * 6; // 360 / 60 = 6 degrees per second
-
-    // Apply rotations using inline styles
-    if (hourHandRef.current) {
-      hourHandRef.current.style.transform = `translate(-50%, -100%) rotate(${hourRotation}deg)`;
-    }
-    if (minuteHandRef.current) {
-      minuteHandRef.current.style.transform = `translate(-50%, -100%) rotate(${minuteRotation}deg)`;
-    }
-    if (secondHandRef.current) {
-      secondHandRef.current.style.transform = `translate(-50%, -100%) rotate(${secondRotation}deg)`;
-    }
-  };
-
-  const seconds = time.getSeconds();
+  const hours = time.getHours();
   const minutes = time.getMinutes();
+  const seconds = time.getSeconds();
+  const hourForClock = hours % 12; // Hour in 12-hour format for visual representation
 
-  const secondsOffset = circumference * (1 - seconds / 60);
-  const minutesOffset = circumference * (1 - minutes / 60);
-
+  // Calculate the index corresponding to the hour hand position (approximate)
+  // Each "hour" mark is 5 bars away (60 bars / 12 hours = 5 bars/hour)
+  const hourIndex = Math.floor(hourForClock * 5 + minutes / 12); // Add fraction for minute progression
 
   return (
-    <div className="relative w-48 h-48 flex items-center justify-center">
-      {/* SVG Container for Tracks */}
-       <svg className="absolute w-full h-full" viewBox="0 0 160 160">
-         {/* Base Track */}
-         <circle
-           cx="80"
-           cy="80"
-           r={radius}
-           fill="none"
-           stroke="hsl(var(--muted))"
-           strokeWidth="6"
-         />
-         {/* Minutes Track */}
-         <circle
-           cx="80"
-           cy="80"
-           r={radius}
-           fill="none"
-           stroke="hsl(var(--foreground))"
-           strokeWidth="6"
-           strokeDasharray={circumference}
-           strokeDashoffset={minutesOffset}
-           transform="rotate(-90 80 80)"
-           style={{ transition: 'stroke-dashoffset 0.5s linear' }}
-         />
-         {/* Seconds Track (Slightly smaller radius) */}
-          <circle
-            cx="80"
-            cy="80"
-            r={radius - 8} // Slightly smaller radius
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="4" // Thinner stroke
-            strokeDasharray={2 * Math.PI * (radius - 8)}
-            strokeDashoffset={2 * Math.PI * (radius - 8) * (1 - seconds / 60)}
-            transform="rotate(-90 80 80)"
-            style={{ transition: 'stroke-dashoffset 1s linear' }} // Use linear for smoother second hand feel
-          />
-       </svg>
+    <div className="relative flex items-center justify-center w-[200px] h-[200px] my-4">
+      {/* Clock Background */}
+      <div className="absolute w-full h-full rounded-full bg-muted border-2 border-border shadow-inner"></div>
 
-      {/* Clock Face - Div based */}
-      <div className="relative w-full h-full rounded-full bg-secondary border-2 border-muted flex items-center justify-center shadow-inner">
+      {/* Bars Container */}
+      <div className="absolute w-full h-full">
+        {Array.from({ length: numBars }).map((_, i) => {
+          const rotation = i * (360 / numBars);
+          const isSecondPast = i < seconds;
+          const isMinutePastOrCurrent = i <= minutes;
+          const isHourMark = i === hourIndex;
 
-        {/* Center Dot */}
-        <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
-
-        {/* Hands Container - positioned absolutely at the center */}
-        <div className="absolute top-1/2 left-1/2 w-0 h-0">
-          {/* Hour Hand */}
-          <div
-            ref={hourHandRef}
-            className="absolute bottom-0 left-1/2 w-1.5 h-[25%] bg-foreground origin-bottom rounded-t-full"
-            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-          />
-          {/* Minute Hand */}
-          <div
-            ref={minuteHandRef}
-            className="absolute bottom-0 left-1/2 w-1 h-[35%] bg-foreground origin-bottom rounded-t-full"
-            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-          />
-          {/* Second Hand */}
-          <div
-            ref={secondHandRef}
-            className="absolute bottom-0 left-1/2 w-0.5 h-[40%] bg-primary origin-bottom rounded-t-full"
-            style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
-          />
-        </div>
+          return (
+            <div
+              key={i}
+              className={cn(
+                'absolute left-1/2 top-0 origin-bottom transition-all duration-300 ease-linear',
+                'bg-foreground', // Default bar color
+                isHourMark ? `h-[${hourBarHeight}px]` : `h-[${barHeight}px]`,
+                `w-[${barWidth}px]`,
+                isSecondPast || isMinutePastOrCurrent || isHourMark ? 'opacity-70' : 'opacity-20', // Default active vs inactive opacity
+                isMinutePastOrCurrent && !isHourMark && 'bg-primary opacity-90', // Minute bar color
+                isHourMark && 'bg-accent opacity-100', // Hour bar color and opacity
+                isSecondPast && !isMinutePastOrCurrent && !isHourMark && 'bg-foreground opacity-70' // Second bar color (if different needed)
+              )}
+              style={{
+                transformOrigin: `center ${radius}px`,
+                transform: `translateX(-50%) rotate(${rotation}deg)`,
+                // Adjust top position based on clock size and bar height to center origin
+                top: `calc(50% - ${radius}px)`,
+                 height: isHourMark ? `${hourBarHeight}px` : `${barHeight}px`, // Explicit height needed for absolute positioning
+              }}
+            />
+          );
+        })}
       </div>
+       {/* Center Dot */}
+       <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
     </div>
   );
 };
@@ -345,8 +287,8 @@ export const Home: React.FC = () => {
             <CardTitle>Relógio</CardTitle>
             <CardDescription>Relógio Analógico e Digital</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <AnalogClock />
+          <CardContent className="flex flex-col items-center gap-4 pt-4"> {/* Added pt-4 for spacing */}
+            <BarClock />
             <DigitalClock />
           </CardContent>
         </Card>
@@ -363,3 +305,5 @@ export const Home: React.FC = () => {
     </div>
   );
 };
+
+    
