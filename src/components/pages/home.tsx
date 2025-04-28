@@ -18,28 +18,31 @@ const AnalogClock = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTime(new Date());
-      updateHands();
     }, 1000);
 
-    // Initial update
-    updateHands();
+    // Initial update to set hands immediately
+    updateHands(new Date());
 
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
   useEffect(() => {
-    updateHands();
+    updateHands(time);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]); // Update hands whenever time changes
 
-  const updateHands = () => {
-    const hours = time.getHours();
-    const minutes = time.getMinutes();
-    const seconds = time.getSeconds();
+  const updateHands = (currentTime: Date) => {
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+    const seconds = currentTime.getSeconds();
 
-    const hourRotation = (hours % 12 + minutes / 60) * 30;
-    const minuteRotation = (minutes + seconds / 60) * 6; // Add seconds fraction for smoother movement
-    const secondRotation = seconds * 6;
+    // Calculate rotations
+    const hourRotation = (hours % 12 + minutes / 60) * 30; // 360 / 12 = 30 degrees per hour
+    const minuteRotation = (minutes + seconds / 60) * 6; // 360 / 60 = 6 degrees per minute
+    const secondRotation = seconds * 6; // 360 / 60 = 6 degrees per second
 
+    // Apply rotations using inline styles
     if (hourHandRef.current) {
       hourHandRef.current.style.transform = `translate(-50%, -100%) rotate(${hourRotation}deg)`;
     }
@@ -52,28 +55,38 @@ const AnalogClock = () => {
   };
 
   return (
-    <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted flex items-center justify-center">
+    <div className="relative w-48 h-48 rounded-full bg-secondary border-2 border-muted flex items-center justify-center shadow-inner">
+      {/* Clock face numbers/markers (optional) */}
+      {/* ... */}
+
       {/* Center Dot */}
       <div className="absolute w-2 h-2 bg-primary rounded-full z-10 border border-background"></div>
-      {/* Hands */}
-      <div
-        className="absolute bottom-1/2 left-1/2 w-1 h-[25%] bg-border origin-bottom rounded-t-full"
-        ref={hourHandRef}
-        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
-      />
-      <div
-        className="absolute bottom-1/2 left-1/2 w-0.5 h-[35%] bg-input origin-bottom rounded-t-full"
-        ref={minuteHandRef}
-        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
-      />
-      <div
-        className="absolute bottom-1/2 left-1/2 w-[1px] h-[40%] bg-primary origin-bottom rounded-t-full"
-        ref={secondHandRef}
-        style={{ transform: 'translate(-50%, -100%) rotate(0deg)'}}
-      />
+
+      {/* Hands Container - positioned absolutely at the center */}
+      <div className="absolute top-1/2 left-1/2 w-0 h-0">
+        {/* Hour Hand */}
+        <div
+          ref={hourHandRef}
+          className="absolute bottom-0 left-1/2 w-1.5 h-[25%] bg-foreground origin-bottom rounded-t-full"
+          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+        />
+        {/* Minute Hand */}
+        <div
+          ref={minuteHandRef}
+          className="absolute bottom-0 left-1/2 w-1 h-[35%] bg-foreground origin-bottom rounded-t-full"
+          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+        />
+        {/* Second Hand */}
+        <div
+          ref={secondHandRef}
+          className="absolute bottom-0 left-1/2 w-0.5 h-[40%] bg-primary origin-bottom rounded-t-full"
+          style={{ transform: 'translate(-50%, -100%) rotate(0deg)' }} // Initial position
+        />
+      </div>
     </div>
   );
 };
+
 
 const DigitalClock = () => {
   const [time, setTime] = useState(new Date());
@@ -300,5 +313,3 @@ export const Home: React.FC = () => {
     </div>
   );
 };
-
-    
