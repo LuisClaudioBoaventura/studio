@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, Search } from "lucide-react" // Added Search icon
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -220,6 +220,7 @@ const Sidebar = React.forwardRef<
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+            "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
@@ -328,23 +329,39 @@ const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 const SidebarInput = React.forwardRef<
-  React.ElementRef<typeof Input>,
-  React.ComponentProps<typeof Input>
->(({ className, ...props }, ref) => {
-  const { state } = useSidebar();
-  const placeholder = state === "collapsed" ? "🔍" : "Search...";
+  HTMLInputElement, // Ref type for the underlying input element
+  React.ComponentProps<typeof Input> & { icon?: React.ReactNode } // Props for the ui/Input component, allow icon prop
+>(({ className, icon, ...props }, ref) => {
+  const { state, isMobile } = useSidebar();
+
+  if (state === "collapsed" && !isMobile) {
+    return (
+      <SidebarMenuButton
+        tooltip={{ side: "right", align: "center", children: "Search" }}
+        className={cn("w-full", className)}
+        // No ref forwarding to the button, as the original ref is for an <input>
+        // onClick could be added here to expand sidebar or open search modal
+      >
+        {icon || <Search />} 
+      </SidebarMenuButton>
+    );
+  }
 
   return (
-    <Input
-      ref={ref}
-      data-sidebar="input"
-      className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        className
-      )}
-      placeholder={placeholder}
-      {...props}
-    />
+    <div className="relative flex items-center">
+      {icon && <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none [&>svg]:size-4">{icon}</div>}
+      <Input
+        ref={ref} // Forward ref to the ui/Input component (which forwards to HTMLInputElement)
+        data-sidebar="input"
+        className={cn(
+          "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+          icon ? "pl-8" : "", // Add padding if icon is present
+          className
+        )}
+        placeholder="Search..." // Standard placeholder
+        {...props}
+      />
+    </div>
   );
 });
 SidebarInput.displayName = "SidebarInput"
