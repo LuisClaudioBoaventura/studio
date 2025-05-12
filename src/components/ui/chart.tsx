@@ -317,7 +317,6 @@ const ChartLegendContent = React.forwardRef<
 )
 ChartLegendContent.displayName = "ChartLegend"
 
-
 export const AnalogClock: React.FC = () => {
   const [time, setTime] = React.useState(new Date());
 
@@ -340,77 +339,75 @@ export const AnalogClock: React.FC = () => {
     <div className="relative flex h-48 w-48 items-center justify-center rounded-full border-2 border-border">
       <div className="absolute h-48 w-48 rounded-full bg-transparent">
         <div
-          className="absolute inset-0 m-auto h-[45%] w-[2px] origin-bottom animate-rotation"
+          className="absolute inset-0 m-auto h-[30%] w-[3px] origin-bottom bg-primary"
           style={{
-            transform: `rotate(${hourRotation}deg)`,
-            animationDelay: `${-hourRotation / 360 * 3600}s`, // Delay based on current rotation for smooth transition
+            transform: `rotate(${hourRotation}deg) translateY(-50%)`,
           }}
         />
         <div
-          className="absolute inset-0 m-auto h-[60%] w-[2px] origin-bottom animate-rotation"
+          className="absolute inset-0 m-auto h-[40%] w-[2px] origin-bottom bg-foreground"
           style={{
-            transform: `rotate(${minuteRotation}deg)`,
-            animationDelay: `${-minuteRotation / 360 * 60}s`, // Delay based on current rotation for smooth transition
+            transform: `rotate(${minuteRotation}deg) translateY(-50%)`,
           }}
         />
         <div
-          className="absolute inset-0 m-auto h-[75%] w-[1px] origin-bottom animate-rotation"
+          className="absolute inset-0 m-auto h-[45%] w-[1px] origin-bottom bg-accent"
           style={{
-            transform: `rotate(${secondRotation}deg)`,
-            animationDelay: `${-secondRotation / 360}s`, // Delay based on current rotation for smooth transition
+            transform: `rotate(${secondRotation}deg) translateY(-50%)`,
           }}
         />
       </div>
       <div className="absolute h-1.5 w-1.5 rounded-full bg-primary" />
-      <div className="absolute inset-0 z-0 grid grid-cols-12 gap-y-1">
-        {[...Array(12).keys()].map((n) => (
-          <div
-            key={n}
-            className="col-span-1"
-            style={{
-              transform: `rotate(${n * 30}deg)`,
-            }}
-          >
-            <div className="absolute left-1/2 top-0 h-2 w-[2px] -translate-x-1/2 bg-border"></div>
-          </div>
-        ))}
-      </div>
-      <style jsx>{`
-        .animate-rotation {
-          animation: rotate 43200s linear infinite;
+      {/* Markings for hours */}
+      {[...Array(12).keys()].map((n) => (
+        <div
+          key={`hour-mark-${n}`}
+          className="absolute left-1/2 top-1/2 h-[45%] w-[2px] -translate-x-1/2 -translate-y-full origin-bottom bg-border"
+          style={{
+            transform: `rotate(${n * 30}deg)`,
+          }}
+        >
+           <div className="h-2 w-full bg-border"></div> {/* Short line for hour mark */}
+        </div>
+      ))}
+       {/* Markings for minutes/seconds (thinner or less prominent) */}
+       {[...Array(60).keys()].map((n) => {
+        if (n % 5 !== 0) { // Don't draw over hour marks
+          return (
+            <div
+              key={`minute-mark-${n}`}
+              className="absolute left-1/2 top-1/2 h-[48%] w-[1px] -translate-x-1/2 -translate-y-full origin-bottom"
+              style={{
+                transform: `rotate(${n * 6}deg)`,
+              }}
+            >
+              <div className="h-1 w-full bg-muted-foreground opacity-50"></div> {/* Very short, faint line */}
+            </div>
+          );
         }
-
-        .animate-rotation:nth-child(2) {
-          animation-duration: 3600s; /* Minute hand */
-          animation-delay: -${(minutes * 60 + seconds)}s;
-        }
-
-        .animate-rotation:nth-child(3) {
-          animation-duration: 60s; /* Second hand */
-          animation-delay: -${seconds}s;
-        }
-
-        @keyframes rotate {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
+        return null;
+      })}
     </div>
   )
 };
 
 export function Clock() {
-  const now = new Date();
+  const [currentTime, setCurrentTime] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const updateClock = () => {
+      setCurrentTime(format(new Date(), "HH:mm:ss"));
+    };
+    updateClock(); // Set initial time
+    const intervalId = setInterval(updateClock, 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
-    <div>{format(now, "HH:mm:ss")}</div>
+    <div>{currentTime !== null ? currentTime : "Loading time..."}</div>
   )
 }
 export {Clock as ClockComponent}
-// Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,
@@ -457,5 +454,4 @@ export {
   ChartLegendContent,
   ChartContainer as Chart,
   ChartStyle,
-  AnalogClock,
 }
